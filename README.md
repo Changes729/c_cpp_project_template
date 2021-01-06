@@ -18,6 +18,7 @@ Project_Name
 |-- dist
 |-- doc
 |-- include
+|-- config
 |-- LICENSE
 |-- README.md
 |-- resource
@@ -35,4 +36,5 @@ Project_Name
 - [spike](#spike): 类似于`playground`。
 - [src](#src): 源代码。
 - [test](#test): 测试工具。
-- [tools](#tools): 构建工具。
+- [tools](#tools): 构建工具。 ncurse 工程中有个 progs 目录，就类似这个。它里面都放着方便调试用的工具。
+- [config](#config): `miscellaneous`,配置文件，杂项文件。ncurse 工程中的 misc 文件夹，就放了许多运行时需要配置文件。
