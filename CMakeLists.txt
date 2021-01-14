@@ -15,11 +15,24 @@ else()
   set(ENV{CMAKE_PROJECT_VERSION} ${CPACK_PROJECT_VERSION})
 endif()
 
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+CHECK_CXX_COMPILER_FLAG("-std=c++1z" COMPILER_SUPPORTS_CXX1Z)
+if(COMPILER_SUPPORTS_CXX17)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+elseif(COMPILER_SUPPORTS_CXX1Z)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+else()
+    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
+endif()
+
 # message("Executable Name: " ${CPACK_PROJECT_NAME})
 message("Executable Name: " $ENV{CMAKE_PROJECT_NAME})
 
 include_directories(
-  src/example
+  src/example/
+
+  include/
 )
 
 add_executable( ${CPACK_PROJECT_NAME}
