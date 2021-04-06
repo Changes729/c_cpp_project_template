@@ -1,0 +1,3 @@
+[submodule "3rdparty/linux-list"]
+	path = 3rdparty/linux-list
+	url = https://github.com/sysprog21/linux-list.git
