@@ -7,3 +7,5 @@ foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	set (SOURCE_FILES ${EXAMPLE_FILE})
 	add_executable(${EXAMPLE} ${SOURCE_FILES} )
 endforeach(EXAMPLE_FILE)
+
+target_link_libraries(alsa-play asound)
