@@ -42,6 +42,10 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 ## support pkg_check_modules
 find_package(PkgConfig REQUIRED)
 
@@ -50,18 +54,7 @@ find_package(PkgConfig REQUIRED)
 # link_directories(${LIBUSB_LIBRARY_DIRS})
 # link_libraries(${LIBUSB_LIBRARIES})
 
-include_directories(src/example)
-include_directories(include)
-
-add_executable( ${CPACK_PROJECT_NAME}
-  src/main.c
-
-  src/example/example.cpp
-)
-
-# Cannot check this.
-#find_library(libpthread REQUIRE)
-#target_link_libraries(Start_from_zero pthread)
+add_subdirectory(src)
 
 if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
   message("build spike subdirectory")
