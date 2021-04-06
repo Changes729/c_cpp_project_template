@@ -62,3 +62,8 @@ add_executable( ${CPACK_PROJECT_NAME}
 # Cannot check this.
 #find_library(libpthread REQUIRE)
 #target_link_libraries(Start_from_zero pthread)
+
+if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
+  message("build spike subdirectory")
+  add_subdirectory(spike)
+endif()
