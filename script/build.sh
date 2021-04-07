@@ -22,7 +22,11 @@ build() {
 }
 
 run() {
-  cd $MAIN_DIR/build
+  if [ -d $MAIN_DIR/build/bin ]; then
+    cd $MAIN_DIR/build/bin
+  else
+    build
+  fi
 
   if [ ! -f $CMAKE_PROJECT_NAME ]; then
     build
