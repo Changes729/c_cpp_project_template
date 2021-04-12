@@ -1,4 +1,6 @@
 include_directories(.)
+include_directories(include)
+include_directories(shared)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
@@ -22,9 +24,8 @@ include_directories(${GOBJECT_INCLUDE_DIRS})
 link_directories(${GOBJECT_LIBRARY_DIRS})
 link_libraries(${GOBJECT_LIBRARIES})
 
-file(GLOB EXAMPLES_C "*.c")
-
-message("CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
+file(GLOB EXAMPLES_C "src/*.c")
+file(GLOB SHARED_C "shared/*.c")
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
@@ -47,7 +48,7 @@ set(GLIB_DBUS_BINDING_FILES
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)
 	set (SOURCE_FILES ${EXAMPLE_FILE})
-	add_executable(${EXAMPLE} ${GLIB_DBUS_BINDING_FILES} ${SOURCE_FILES})
+	add_executable(${EXAMPLE} ${GLIB_DBUS_BINDING_FILES} ${SOURCE_FILES} ${SHARED_C})
 endforeach(EXAMPLE_FILE)
 
 target_link_libraries(alsa-play asound)
