@@ -24,6 +24,11 @@ include_directories(${GOBJECT_INCLUDE_DIRS})
 link_directories(${GOBJECT_LIBRARY_DIRS})
 link_libraries(${GOBJECT_LIBRARIES})
 
+pkg_check_modules(GIO REQUIRED gio-2.0)
+include_directories(${GIO_INCLUDE_DIRS})
+link_directories(${GIO_LIBRARY_DIRS})
+link_libraries(${GIO_LIBRARIES})
+
 file(GLOB EXAMPLES_C "src/*.c")
 file(GLOB SHARED_C "shared/*.c")
 
