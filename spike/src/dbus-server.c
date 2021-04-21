@@ -20,6 +20,7 @@ typedef struct
 
 static void dbus_main_loop(DBusConnection *dbus_address);
 static void reply_to_method_call(DBusMessage *msg, DBusConnection *conn);
+static void reply_introspect_method_call(DBusMessage *msg, DBusConnection *conn);
 static void send_signal_info(DBusMessage *msg, DBusConnection *conn);
 
 /**
@@ -37,9 +38,19 @@ struct
     TEST_DBUS_INTERFACE_BASE,
     {
         {DBUS_NODE_METHOD, "Method", "s", reply_to_method_call},
+        {DBUS_NODE_METHOD, "Introspect", "s", reply_introspect_method_call},
         {DBUS_NODE_SIGNAL, "Signal", "s", send_signal_info},
         {DBUS_NODE_NULL, NULL, NULL, NULL},
     },
+},
+  freedesktop_dbus_interface = {
+      TEST_DBUS_BUS_NAME,
+      "/",
+      "org.freedesktop.DBus.Introspectable",
+      {
+          {DBUS_NODE_METHOD, "Introspect", "s", reply_introspect_method_call},
+          {DBUS_NODE_NULL, NULL, NULL, NULL},
+      },
 };
 
 int main(int agrc, char *argv[])
@@ -108,6 +119,25 @@ static void dbus_main_loop(DBusConnection *dbus_address)
         }
       }
     }
+
+    for (dbus_node_t *node = freedesktop_dbus_interface.nodes;
+         node->type != DBUS_NODE_NULL; node++)
+    {
+      if (node->node_callback == NULL)
+      {
+        // ERROR
+        break;
+      }
+      else if (node->type == DBUS_NODE_METHOD)
+      {
+        if (dbus_message_is_method_call(msg, freedesktop_dbus_interface.interface, node->name))
+        {
+          node->node_callback(msg, dbus_address);
+          break;
+        }
+      }
+    }
+
     // todo: reply Properties
 
     dbus_message_unref(msg);
@@ -164,6 +194,25 @@ end:
   return;
 }
 
+static void reply_introspect_method_call(DBusMessage *msg, DBusConnection *dbus_address)
+{
+  DBusMessage *reply = NULL;
+
+  reply = dbus_message_new_method_return(msg);
+  if (reply == NULL)
+  {
+    goto end;
+  }
+
+  const char *str = TEST_DBUS_SERVER_INTROSPECTION_DESC_XML;
+  dbus_message_append_args(reply, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID);
+
+  dbus_connection_send(dbus_address, reply, NULL);
+  dbus_message_unref(reply);
+end:
+  return;
+}
+
 static void send_signal_info(DBusMessage *msg, DBusConnection *conn)
 {
   dbus_uint32_t serial;
@@ -175,7 +224,7 @@ static void send_signal_info(DBusMessage *msg, DBusConnection *conn)
     goto end;
   }
 
-  const char* str = "Hello world";
+  const char *str = "Hello world";
 
   dbus_message_iter_init_append(msg, &iter);
   if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &str))
