@@ -6,28 +6,22 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 include_directories(${GLIB_INCLUDE_DIRS})
 link_directories(${GLIB_LIBRARY_DIRS})
-link_libraries(${GLIB_LIBRARIES})
-link_libraries(${GLIB_GLIB_GOBJECT_LIBRARIES})
 
 pkg_check_modules(DBUS REQUIRED dbus-1)
 include_directories(${DBUS_INCLUDE_DIRS})
 link_directories(${DBUS_LIBRARY_DIRS})
-link_libraries(${DBUS_LIBRARIES})
 
 pkg_check_modules(DBUS_GLIB REQUIRED dbus-glib-1)
 include_directories(${DBUS_GLIB_INCLUDE_DIRS})
 link_directories(${DBUS_GLIB_LIBRARY_DIRS})
-link_libraries(${DBUS_GLIB_LIBRARIES})
 
 pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 include_directories(${GOBJECT_INCLUDE_DIRS})
 link_directories(${GOBJECT_LIBRARY_DIRS})
-link_libraries(${GOBJECT_LIBRARIES})
 
 pkg_check_modules(GIO REQUIRED gio-2.0)
 include_directories(${GIO_INCLUDE_DIRS})
 link_directories(${GIO_LIBRARY_DIRS})
-link_libraries(${GIO_LIBRARIES})
 
 file(GLOB EXAMPLES_C "src/*.c")
 file(GLOB SHARED_C "shared/*.c")
@@ -57,3 +51,12 @@ foreach(EXAMPLE_FILE ${EXAMPLES_C})
 endforeach(EXAMPLE_FILE)
 
 target_link_libraries(alsa-play asound)
+
+target_link_libraries(dbus-server ${DBUS_LIBRARIES})
+target_link_libraries(dbus-client ${DBUS_LIBRARIES})
+
+target_link_libraries(glib-dbus-server ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
+target_link_libraries(glib-dbus-client ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
+
+target_link_libraries(glib-dbus-server2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
+target_link_libraries(glib-dbus-client2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${GIO_LIBRARIES})
