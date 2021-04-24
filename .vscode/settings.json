@@ -1,5 +1,6 @@
 {
   "terminal.integrated.env.linux": {
     "CMAKE_PROJECT_NAME": "a.out"
-  }
+  },
+  "clang-format.assumeFilename": "${workspaceFolder}/.clang-format"
 }
