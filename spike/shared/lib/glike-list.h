@@ -35,33 +35,9 @@ inline static void list_free(list_t *list)
   free(list);
 }
 
-inline static bool list_append(list_t *list_head, void *data)
-{
-  list_t *new_list = list_alloc();
-
-  if(new_list != NULL) {
-    list_add_tail(&new_list->head, &list_head->head);
-    new_list->data = data;
-  }
-
-  return new_list != NULL;
-}
-
-inline static bool list_remove(list_t *list_head, const void *data)
-{
-  list_t *node;
-  list_for_each_entry(node, &list_head->head, head)
-  {
-    if(node->data == data) {
-      list_del(&node->head);
-      list_free(node);
-      node = NULL;
-      break;
-    }
-  }
-
-  return node == NULL;
-}
+bool    list_append(list_t *list_head, void *data);
+bool    list_remove(list_t *list_head, const void *data);
+list_t *list_find(list_t *list, const void *data);
 
 void    g_slist_free_full(list_t *list, DestroyCallback_t free_func);
 list_t *g_slist_prepend(list_t *list, void *data);
@@ -81,7 +57,6 @@ list_t *g_slist_copy(list_t *list);
 
 list_t *g_slist_copy_deep(list_t *list, CopyCallback_t func, void *user_data);
 list_t *g_slist_nth(list_t *list, unsigned n);
-list_t *g_slist_find(list_t *list, const void *data);
 list_t *
     g_slist_find_custom(list_t *list, const void *data, CompareCallback_t func);
 int g_slist_position(list_t *list, list_t *llink);

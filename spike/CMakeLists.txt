@@ -49,8 +49,9 @@ set(GLIB_DBUS_BINDING_FILES
 	${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
 )
 
+# FIXME: ...
 add_library(project_library ${LIB_SRC})
-add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC})
+add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC} ${LIB_SRC})
 target_link_libraries(lib_dbus_helper ${project_library})
 
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
