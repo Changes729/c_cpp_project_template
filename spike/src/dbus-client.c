@@ -3,7 +3,7 @@
 #include <dbus/dbus.h>
 #include <unistd.h>
 
-#include "test_dbus_define.h"
+#include "dbus_define.h"
 
 static void receive_signal_info(DBusMessage *msg, DBusConnection *conn);
 static int method_call(DBusMessage *msg, DBusConnection *conn);

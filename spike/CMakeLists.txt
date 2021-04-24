@@ -1,6 +1,8 @@
+include_directories(../3rdparty/linux-list/include)
 include_directories(.)
 include_directories(include)
 include_directories(shared)
+include_directories(shared/dbus)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
@@ -25,6 +27,7 @@ link_directories(${GIO_LIBRARY_DIRS})
 
 file(GLOB EXAMPLES_C "src/*.c")
 file(GLOB SHARED_C "shared/*.c")
+file(GLOB LIB_DBUS_HELPER_SRC "shared/dbus/*.c")
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
@@ -44,6 +47,8 @@ set(GLIB_DBUS_BINDING_FILES
 	${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
 )
 
+add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC})
+
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)
 	set (SOURCE_FILES ${EXAMPLE_FILE})
@@ -53,7 +58,7 @@ endforeach(EXAMPLE_FILE)
 target_link_libraries(alsa-play asound)
 
 target_link_libraries(dbus-epoll ${DBUS_LIBRARIES})
-target_link_libraries(dbus-server ${DBUS_LIBRARIES})
+target_link_libraries(dbus-server ${DBUS_LIBRARIES} lib_dbus_helper)
 target_link_libraries(dbus-client ${DBUS_LIBRARIES})
 
 target_link_libraries(glib-dbus-server ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
