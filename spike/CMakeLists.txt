@@ -52,6 +52,7 @@ endforeach(EXAMPLE_FILE)
 
 target_link_libraries(alsa-play asound)
 
+target_link_libraries(dbus-epoll ${DBUS_LIBRARIES})
 target_link_libraries(dbus-server ${DBUS_LIBRARIES})
 target_link_libraries(dbus-client ${DBUS_LIBRARIES})
 
