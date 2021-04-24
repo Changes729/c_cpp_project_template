@@ -7,6 +7,7 @@
 
 #include "dbus_define.h"
 #include "dbus_object_helper.h"
+#include "glike-list.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -28,25 +29,25 @@ static DBusMethodTable introspect_methods[] = {
 
 static DBusMethodTable properties_methods[] __attribute__((unused)) = {
     {DBus_METHOD("Get",
-                  DBus_ARGS({"interface", "s"}, {"name", "s"}),
-                  DBus_ARGS({"value", "v"}),
-                  NULL)},
+                 DBus_ARGS({"interface", "s"}, {"name", "s"}),
+                 DBus_ARGS({"value", "v"}),
+                 NULL)},
     {DBus_METHOD("Set",
-                  DBus_ARGS({"interface", "s"}, {"name", "s"}, {"value", "v"}),
-                  NULL,
-                  NULL)},
+                 DBus_ARGS({"interface", "s"}, {"name", "s"}, {"value", "v"}),
+                 NULL,
+                 NULL)},
     {DBus_METHOD("GetAll",
-                  DBus_ARGS({"interface", "s"}),
-                  DBus_ARGS({"properties", "a{sv}"}),
-                  NULL)},
+                 DBus_ARGS({"interface", "s"}),
+                 DBus_ARGS({"properties", "a{sv}"}),
+                 NULL)},
     {},
 };
 
 static DBusMethodTable object_methods[] __attribute__((
     unused)) = {{DBus_METHOD("GetManagedObjects",
-                              NULL,
-                              DBus_ARGS({"objects", "a{oa{sa{sv}}}"}),
-                              NULL)},
+                             NULL,
+                             DBus_ARGS({"objects", "a{oa{sa{sv}}}"}),
+                             NULL)},
                 {}};
 
 static const DBusObjectPathVTable server_vtable = {
@@ -71,15 +72,14 @@ static struct generic_data generic_data = {
 /* Private function ----------------------------------------------------------*/
 void register_dbus_object_path(DBusConnection *conn)
 {
-  // FIXME:
-  struct list *list = malloc(sizeof(struct list));
-  INIT_LIST_HEAD(&list->head);
-
-  list->data = &interface_data;
-
-  list_add_tail(&generic_data.interfaces.head, &list->head);
-
+  list_append(&generic_data.interfaces, &interface_data);
   dbus_connection_register_object_path(conn, "/", &server_vtable, &generic_data);
+}
+
+void unregister_dbus_object_path(DBusConnection *conn)
+{
+  dbus_connection_unregister_object_path(conn, "/");
+  list_remove(&generic_data.interfaces, &interface_data);
 }
 
 static DBusHandlerResult
@@ -106,7 +106,7 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
     list_for_each_entry_safe(list, next, &generic_data->interfaces.head, head)
     {
       struct interface_data *interface = list->data;
-      DBusMethodFunction    function  = NULL;
+      DBusMethodFunction     function  = NULL;
       for(const DBusMethodTable *node = interface->methods; NULL != node->name;
           node++)
       {

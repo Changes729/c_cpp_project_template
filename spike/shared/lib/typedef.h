@@ -1,9 +1,11 @@
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_XML_H
-#define _DBUS_XML_H
+#ifndef _TYPEDEF_H
+#define _TYPEDEF_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_helper.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -11,12 +13,18 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
+typedef void (*Function_t)(void* data, void* user_data);
+typedef void (*DestroyCallback_t)(void* data);
+typedef void (*CompareCallback_t)(const void* a, const void* b);
+typedef void (*CompareCallbackFull_t)(const void* a,
+                                      const void* b,
+                                      void*       user_data);
+typedef void* (*CopyCallback_t)(const void* src, void* data);
+
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_XML_H */
+#endif /* _TYPEDEF_H */

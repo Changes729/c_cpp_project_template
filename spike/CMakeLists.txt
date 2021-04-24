@@ -2,6 +2,7 @@ include_directories(../3rdparty/linux-list/include)
 include_directories(.)
 include_directories(include)
 include_directories(shared)
+include_directories(shared/lib)
 include_directories(shared/dbus)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -28,6 +29,7 @@ link_directories(${GIO_LIBRARY_DIRS})
 file(GLOB EXAMPLES_C "src/*.c")
 file(GLOB SHARED_C "shared/*.c")
 file(GLOB LIB_DBUS_HELPER_SRC "shared/dbus/*.c")
+file(GLOB LIB_SRC "shared/lib/*.c")
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
@@ -47,7 +49,9 @@ set(GLIB_DBUS_BINDING_FILES
 	${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
 )
 
+add_library(project_library ${LIB_SRC})
 add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC})
+target_link_libraries(lib_dbus_helper ${project_library})
 
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)

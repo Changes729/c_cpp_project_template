@@ -51,6 +51,8 @@ int main(int agrc, char *argv[])
 
   dbus_main_loop(dbus_address);
 
+  unregister_dbus_object_path(dbus_address);
+
 __failed:
   return 0;
 }
