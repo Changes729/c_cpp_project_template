@@ -1,3 +1,4 @@
+#include <dbus/dbus.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/poll.h>
@@ -10,7 +11,7 @@
 
 static void dbus_main_loop(DBusConnection *dbus_address);
 
-int main(int agrc, char *argv[])
+int main(int agrc, char* argv[])
 {
   DBusError       err;
   DBusConnection *dbus_address;
