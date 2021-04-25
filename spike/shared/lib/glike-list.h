@@ -39,6 +39,7 @@ bool    list_append(list_t *list_head, void *data);
 bool    list_remove(list_t *list_head, const void *data);
 list_t *list_find(list_t *list, const void *data);
 
+/* Not support -----------------------------------------------------*/
 void    g_slist_free_full(list_t *list, DestroyCallback_t free_func);
 list_t *g_slist_prepend(list_t *list, void *data);
 list_t *g_slist_insert(list_t *list, void *data, int position);
