@@ -15,7 +15,7 @@ extern "C" {
 /* Public typedef ------------------------------------------------------------*/
 typedef void (*Function_t)(void* data, void* user_data);
 typedef void (*DestroyCallback_t)(void* data);
-typedef void (*CompareCallback_t)(const void* a, const void* b);
+typedef int (*CompareCallback_t)(const void* a, const void* b);
 typedef void (*CompareCallbackFull_t)(const void* a,
                                       const void* b,
                                       void*       user_data);
