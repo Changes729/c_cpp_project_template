@@ -1,22 +1,23 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_XML_H
-#define _DBUS_XML_H
+#ifndef _DBUS_ERROR_H
+#define _DBUS_ERROR_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_helper.h"
+#include <dbus/dbus.h>
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
-extern "C" {
+extern "C"{
 #endif
+
 /* Public define -------------------------------------------------------------*/
+#define ERROR_INTERFACE "org.bluez.Error"
+
 /* Public typedef ------------------------------------------------------------*/
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_XML_H */
+#endif /* _DBUS_ERROR_H */

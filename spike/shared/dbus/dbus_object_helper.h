@@ -5,19 +5,14 @@
 /* Public include ------------------------------------------------------------*/
 #include <dbus_helper.h>
 
+#include "glike-list.h"
+
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-// FIXME:
-struct list
-{
-  struct list_head head;
-  void *           data;
-};
-
 // FIXME:
 struct string
 {
@@ -29,8 +24,8 @@ struct string
 // FIXME:
 struct interface_data
 {
-  char *                    name;
-  const DBusMethodTable *   methods;
+  char *                   name;
+  const DBusMethodTable *  methods;
   const DBusSignalTable *  signals;
   const DBusPropertyTable *properties;
   // GSList *pending_prop;
@@ -43,8 +38,8 @@ struct generic_data
 {
   // unsigned int refcount;
   // DBusConnection *conn;
-  char *      path;
-  struct list interfaces;
+  char * path;
+  list_t interfaces;
   // GSList *objects;
   // GSList *added;
   // GSList *removed;

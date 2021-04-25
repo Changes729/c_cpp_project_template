@@ -7,4 +7,6 @@
 #define TEST_DBUS_NODE           TEST_DBUS_BUS_NAME
 #define TEST_DBUS_OBJECT         TEST_DBUS_PATH_BASE
 
+#define DBUS_INTERFACE_OBJECT_MANAGER "org.freedesktop.DBus.ObjectManager"
+
 #endif  //! TEST_DBUS_H

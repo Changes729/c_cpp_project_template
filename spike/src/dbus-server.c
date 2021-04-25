@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/poll.h>
@@ -9,11 +10,15 @@
 #include "dbus_object.h"
 
 static void dbus_main_loop(DBusConnection *dbus_address);
+static void sigint_handler(int param);
+
+static DBusConnection *dbus_address;
 
 int main(int agrc, char *argv[])
 {
-  DBusError       err;
-  DBusConnection *dbus_address;
+  signal(SIGINT, sigint_handler);
+
+  DBusError err;
 
   dbus_error_init(&err);
 
@@ -51,6 +56,8 @@ int main(int agrc, char *argv[])
 
   dbus_main_loop(dbus_address);
 
+  unregister_dbus_object_path(dbus_address);
+
 __failed:
   return 0;
 }
@@ -60,4 +67,11 @@ static void dbus_main_loop(DBusConnection *dbus_address)
   while(TRUE) {
     _run_loop_dbus(dbus_address);
   }
+}
+
+static void sigint_handler(int param)
+{
+  unregister_dbus_object_path(dbus_address);
+
+  exit(0);
 }

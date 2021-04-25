@@ -28,9 +28,9 @@ static int string_append_printf(struct string *, const char *format, ...);
  * @param  None
  * @retval None
  */
-static void print_arguments(struct string *     gstr,
+static void print_arguments(struct string *    gstr,
                             const DBusArgInfo *args,
-                            const char *        direction)
+                            const char *       direction)
 {
   for(; args && args->name; args++) {
     string_append_printf(gstr,
@@ -39,15 +39,15 @@ static void print_arguments(struct string *     gstr,
                          args->signature);
 
     if(direction)
-      string_append_printf(gstr, " direction=\"%s\"/>\n", direction);
+      string_append_printf(gstr, " direction=\"%s\"/>", direction);
     else
-      string_append_printf(gstr, "/>\n");
+      string_append_printf(gstr, "/>");
   }
 }
 
 void generate_interface_xml(struct string *gstr, struct interface_data *iface)
 {
-  const DBusMethodTable *   method;
+  const DBusMethodTable *  method;
   const DBusSignalTable *  signal;
   const DBusPropertyTable *property;
 
@@ -78,7 +78,7 @@ void generate_interface_xml(struct string *gstr, struct interface_data *iface)
     if(signal->flags & G_DBUS_SIGNAL_FLAG_DEPRECATED)
       string_append_printf(gstr, G_DBUS_ANNOTATE_DEPRECATED);
 
-    string_append_printf(gstr, "</signal>\n");
+    string_append_printf(gstr, "</signal>");
   }
 
   for(property = iface->properties; property && property->name; property++) {
