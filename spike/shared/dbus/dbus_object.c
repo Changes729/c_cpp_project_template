@@ -98,11 +98,7 @@ static const DBusObjectPathVTable server_vtable = {
 };
 
 static struct generic_data generic_data = {
-    .path       = "/",
-    .interfaces = {.data = NULL,
-                   .head = {&generic_data.interfaces.head,
-                            &generic_data.interfaces.head}},
-    .introspect = NULL,
+    .path = "/",
 };
 
 /* Private class -------------------------------------------------------------*/
@@ -122,6 +118,7 @@ void register_dbus_object_path(DBusConnection *conn)
 void unregister_dbus_object_path(DBusConnection *conn)
 {
   dbus_connection_unregister_object_path(conn, generic_data.path);
+
   list_remove(&generic_data.interfaces, &object_properties);
   list_remove(&generic_data.interfaces, &interface_properties);
   list_remove(&generic_data.interfaces, &interface_introspectable);
