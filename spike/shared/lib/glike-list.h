@@ -22,6 +22,8 @@ typedef struct list
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
+#define list_init(list) INIT_LIST_HEAD(&list->head)
+
 inline static list_t *list_alloc(void)
 {
   list_t *list = malloc(sizeof(list_t));
@@ -38,6 +40,7 @@ inline static void list_free(list_t *list)
 bool    list_append(list_t *list_head, void *data);
 bool    list_remove(list_t *list_head, const void *data);
 list_t *list_find(list_t *list, const void *data);
+list_t *list_find_custom(list_t *list, const void *data, CompareCallback_t func);
 
 /* Not support -----------------------------------------------------*/
 void    g_slist_free_full(list_t *list, DestroyCallback_t free_func);
@@ -56,12 +59,10 @@ list_t *g_slist_delete_link(list_t *list, list_t *link_);
 list_t *g_slist_reverse(list_t *list);
 list_t *g_slist_copy(list_t *list);
 
-list_t *g_slist_copy_deep(list_t *list, CopyCallback_t func, void *user_data);
-list_t *g_slist_nth(list_t *list, unsigned n);
-list_t *
-    g_slist_find_custom(list_t *list, const void *data, CompareCallback_t func);
-int g_slist_position(list_t *list, list_t *llink);
-int g_slist_index(list_t *list, const void *data);
+list_t * g_slist_copy_deep(list_t *list, CopyCallback_t func, void *user_data);
+list_t * g_slist_nth(list_t *list, unsigned n);
+int      g_slist_position(list_t *list, list_t *llink);
+int      g_slist_index(list_t *list, const void *data);
 list_t * g_slist_last(list_t *list);
 unsigned g_slist_length(list_t *list);
 void     g_slist_foreach(list_t *list, Function_t func, void *user_data);

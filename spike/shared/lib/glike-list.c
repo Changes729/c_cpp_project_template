@@ -10,9 +10,13 @@
 /* Private template ----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static void _handle_list_init_empty(list_t *list_head);
+
 /* Private function ----------------------------------------------------------*/
 bool list_append(list_t *list_head, void *data)
 {
+  _handle_list_init_empty(list_head);
+
   assert(list_head != NULL);
   assert(list_find(list_head, data) == NULL);
 
@@ -57,4 +61,28 @@ list_t *list_find(list_t *list_head, const void *data)
   }
 
   return find;
+}
+
+list_t *list_find_custom(list_t *list, const void *data, CompareCallback_t func)
+{
+  assert(list != NULL);
+  assert(func != NULL);
+
+  list_t *node, *find = NULL;
+  list_for_each_entry(node, &list->head, head)
+  {
+    if(func(data, node->data) == 0) {
+      find = node;
+      break;
+    }
+  }
+
+  return find;
+}
+
+static void _handle_list_init_empty(list_t *list_head)
+{
+  if(list_head->head.next == NULL || list_head->head.prev == NULL) {
+    list_init(list_head);
+  }
 }
