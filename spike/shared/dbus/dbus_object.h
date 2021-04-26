@@ -10,11 +10,29 @@
 extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
+#define DBUS_OBJECT_INTERFACE
+
 /* Public typedef ------------------------------------------------------------*/
+typedef struct __dbus_object dbus_object_t;
+
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
+bool register_dbus_object_path(DBusConnection* conn);
+bool unregister_dbus_object_path(DBusConnection* conn);
+
+dbus_object_t* attach_dbus_object(DBusConnection*, const char* path);
+dbus_object_t* detach_dbus_object(DBusConnection*, const char* path);
+
+bool add_interface(dbus_object_t* obj,
+                   const char*    iface_name,
+
+                   const DBusMethodTable*   methods,
+                   const DBusSignalTable*   signals,
+                   const DBusPropertyTable* properties,
+
+                   void*               destroy_user_data,
+                   DBusDestroyFunction destroy);
+bool remove_interface(dbus_object_t* obj, const char* iface_name);
 
 #ifdef __cplusplus
 }

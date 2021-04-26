@@ -28,32 +28,30 @@ struct interface_data
   const DBusMethodTable *  methods;
   const DBusSignalTable *  signals;
   const DBusPropertyTable *properties;
-  // GSList *pending_prop;
-  void *user_data;
-  // DBusDestroyFunction destroy;
+  list_t *                 pending_prop;  // for properties
+  void *                   user_data;
+  DBusDestroyFunction      destroy;
 };
 
 // FIXME:
-struct generic_data
+struct __dbus_object
 {
-  // unsigned int refcount;
-  // DBusConnection *conn;
-  char * path;
-  list_t interfaces;
-  // GSList *objects;
-  // GSList *added;
-  // GSList *removed;
-  // guint process_id;
-  // gboolean pending_prop;
-  char *introspect;
-  // struct generic_data *parent;
+  DBusConnection *      conn;
+  char *                path;
+  list_t                interfaces;
+  list_t                objects;
+  list_t                added;
+  list_t                removed;
+  bool                  pending_prop;  // for interface add/remove
+  char *                introspect;
+  struct __dbus_object *parent;
 };
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void generate_introspection_xml(DBusConnection *     conn,
-                                struct generic_data *data,
-                                const char *         path);
+void generate_introspection_xml(DBusConnection *      conn,
+                                struct __dbus_object *data,
+                                const char *          path);
 
 #ifdef __cplusplus
 }
