@@ -29,7 +29,8 @@ typedef list_t list_head_t;
 
 inline static bool is_list_empty(const list_head_t *list_head)
 {
-  return list_head == NULL ? true : list_head->head.next == list_head->head.prev;
+  return (list_head == NULL) || list_empty(&list_head->head) ||
+         (list_head->head.prev == NULL && list_head->head.next == NULL);
 }
 
 inline static void list_free(list_t *list)

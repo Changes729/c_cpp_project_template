@@ -14,10 +14,12 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private template ----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-/* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static int  _interface_find_by_name(const struct interface_data *a,
+                                    const struct interface_data *b);
+static void _interface_clean_up(struct interface_data *a);
+
 /* Private function ----------------------------------------------------------*/
-/* Private class function ----------------------------------------------------*/
 /**
  * @brief  ...
  * @param  None
@@ -124,4 +126,23 @@ done:
 
   data->introspect = strdup(string_c_str(gstr));
   string_delete(gstr);
+}
+
+void interface_sets_init(sets_t *sets)
+{
+  sets_init(sets, (CompareCallback_t)_interface_find_by_name, NULL);
+}
+
+bool find_interface_by_name(struct dbus_object *    dbus_object,
+                            const char *            name,
+                            struct interface_data **interface)
+{
+  const struct interface_data find_tmp = {.name = (char *)name};
+  return sets_find(&dbus_object->interfaces, &find_tmp, (void *)interface);
+}
+
+static int _interface_find_by_name(const struct interface_data *a,
+                                   const struct interface_data *b)
+{
+  return strcmp(a->name, b->name);
 }

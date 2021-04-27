@@ -19,7 +19,7 @@ struct interface_data
   const DBusMethodTable *  methods;
   const DBusSignalTable *  signals;
   const DBusPropertyTable *properties;
-  sets_t *                 pending_prop;
+  sets_t                   pending_prop;
   void *                   user_data;
   DBusDestroyFunction      destroy;
 };
@@ -42,6 +42,11 @@ struct dbus_object
 void generate_introspection_xml(DBusConnection *    conn,
                                 struct dbus_object *data,
                                 const char *        path);
+
+void interface_sets_init(sets_t *sets);
+bool find_interface_by_name(struct dbus_object *    dbus_object,
+                            const char *            name,
+                            struct interface_data **interface);
 
 #ifdef __cplusplus
 }
