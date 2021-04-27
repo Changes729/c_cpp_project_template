@@ -114,7 +114,7 @@ void generate_introspection_xml(DBusConnection *     conn,
 
   string_append_printf(gstr, "<node>");
 
-  list_for_each_entry(list, &data->interfaces.head, head)
+  list_foreach(list, sets_get_listhead(&data->interfaces))
   {
     struct interface_data *iface = list->data;
     string_append_printf(gstr, "<interface name=\"%s\">", iface->name);

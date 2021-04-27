@@ -5,7 +5,7 @@
 /* Public include ------------------------------------------------------------*/
 #include <dbus_helper.h>
 
-#include "glike-list.h"
+#include "set-list.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -39,7 +39,7 @@ struct generic_data
   // unsigned int refcount;
   // DBusConnection *conn;
   char * path;
-  list_t interfaces;
+  sets_t interfaces;
   // GSList *objects;
   // GSList *added;
   // GSList *removed;

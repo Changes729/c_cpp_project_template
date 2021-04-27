@@ -10,79 +10,120 @@
 /* Private template ----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static void _handle_list_init_empty(list_t *list_head);
+static list_t *_handle_list_init_empty(list_t *list);
 
 /* Private function ----------------------------------------------------------*/
-bool list_append(list_t *list_head, void *data)
+list_t *list_init(list_t *list, void *data)
 {
+  if(NULL == list) return list;
+
+  INIT_LIST_HEAD(&list->head);
+  list->data = data;
+  return list;
+}
+
+list_head_t *list_append_node(list_head_t *list_head, list_t *node)
+{
+  if(NULL == node) {
+    goto __end;
+  }
+
+  if(NULL == list_head) {
+    list_head = list_alloc(NULL);
+    if(NULL == list_head) {
+      goto __end;
+    }
+  }
+
   _handle_list_init_empty(list_head);
+  list_add_tail(&node->head, &list_head->head);
 
-  assert(list_head != NULL);
-  assert(list_find(list_head, data) == NULL);
-
-  list_t *new_list = list_alloc();
-  if(new_list != NULL) {
-    list_add_tail(&new_list->head, &list_head->head);
-    new_list->data = data;
-  }
-
-  return new_list != NULL;
+__end:
+  return list_head;
 }
 
-bool list_remove(list_t *list_head, const void *data)
+list_head_t *list_prepend_node(list_head_t *list_head, list_t *node)
 {
-  assert(list_head != NULL);
+  if(NULL == node) {
+    goto __end;
+  }
 
-  list_t *node;
-  list_for_each_entry(node, &list_head->head, head)
-  {
-    if(node->data == data) {
-      list_del(&node->head);
-      list_free(node);
-      node = NULL;
-      break;
+  if(NULL == list_head) {
+    list_head = list_alloc(NULL);
+    if(NULL == list_head) {
+      goto __end;
     }
   }
 
-  return node == NULL;
+  _handle_list_init_empty(list_head);
+  list_add(&node->head, &list_head->head);
+
+__end:
+  return list_head;
 }
 
-list_t *list_find(list_t *list_head, const void *data)
+list_head_t *list_append(list_head_t *list_head, void *data)
 {
-  assert(list_head != NULL);
+  list_t *new_node = list_alloc(data);
 
-  list_t *node, *find = NULL;
-  list_for_each_entry(node, &list_head->head, head)
-  {
-    if(node->data == data) {
-      find = node;
-      break;
-    }
+  list_head = list_append_node(list_head, new_node);
+  if(NULL == list_head) {
+    list_free(new_node);
   }
 
-  return find;
+  return list_head;
 }
 
-list_t *list_find_custom(list_t *list, const void *data, CompareCallback_t func)
+list_head_t *list_prepend(list_head_t *list_head, void *data)
 {
-  assert(list != NULL);
-  assert(func != NULL);
+  list_t *new_node = list_alloc(data);
 
-  list_t *node, *find = NULL;
-  list_for_each_entry(node, &list->head, head)
-  {
-    if(func(data, node->data) == 0) {
-      find = node;
-      break;
-    }
+  list_head = list_prepend_node(list_head, new_node);
+  if(NULL == list_head) {
+    list_free(new_node);
   }
 
-  return find;
+  return list_head;
 }
 
-static void _handle_list_init_empty(list_t *list_head)
+list_t *list_get_first(list_head_t *list_head)
 {
-  if(list_head->head.next == NULL || list_head->head.prev == NULL) {
-    list_init(list_head);
+  return list_empty(&list_head->head)
+             ? NULL
+             : list_first_entry(&list_head->head, list_t, head);
+}
+
+list_t *list_get_last(list_head_t *list_head)
+{
+  return list_empty(&list_head->head)
+             ? NULL
+             : list_last_entry(&list_head->head, list_t, head);
+}
+
+list_t *list_node_remove(list_t *node)
+{
+  list_del(&node->head);
+  return node;
+}
+
+void list_node_free_full(list_t *node, DestroyCallback_t free_func)
+{
+  if(node == NULL) {
+    return;
   }
+
+  if(free_func != NULL) {
+    free_func(node->data);
+  }
+
+  list_free(node);
+}
+
+static list_t *_handle_list_init_empty(list_t *list)
+{
+  if(list && (list->head.next == NULL || list->head.prev == NULL)) {
+    list_init(list, list->data);
+  }
+
+  return list;
 }

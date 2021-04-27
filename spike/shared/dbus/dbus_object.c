@@ -105,9 +105,9 @@ static struct generic_data generic_data = {
 /* Private function ----------------------------------------------------------*/
 void register_dbus_object_path(DBusConnection *conn)
 {
-  list_append(&generic_data.interfaces, &interface_introspectable);
-  list_append(&generic_data.interfaces, &interface_properties);
-  list_append(&generic_data.interfaces, &object_properties);
+  sets_add(&generic_data.interfaces, &interface_introspectable);
+  sets_add(&generic_data.interfaces, &interface_properties);
+  sets_add(&generic_data.interfaces, &object_properties);
 
   dbus_connection_register_object_path(conn,
                                        generic_data.path,
@@ -119,9 +119,9 @@ void unregister_dbus_object_path(DBusConnection *conn)
 {
   dbus_connection_unregister_object_path(conn, generic_data.path);
 
-  list_remove(&generic_data.interfaces, &object_properties);
-  list_remove(&generic_data.interfaces, &interface_properties);
-  list_remove(&generic_data.interfaces, &interface_introspectable);
+  sets_remove(&generic_data.interfaces, &object_properties);
+  sets_remove(&generic_data.interfaces, &interface_properties);
+  sets_remove(&generic_data.interfaces, &interface_introspectable);
   free(generic_data.introspect);
   generic_data.introspect = NULL;
 }
@@ -178,34 +178,42 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
   return result;
 }
 
+struct interface_find_method_by_name_pkg
+{
+  const char *       iface_name;
+  DBusMessage *      message;
+  DBusMethodFunction method;
+};
+
+int interface_find_method_by_name(void *data, void *user_data)
+{
+  struct interface_find_method_by_name_pkg *pkg       = user_data;
+  struct interface_data *                   interface = data;
+
+  if(strcmp(interface->name, pkg->iface_name) != 0) {
+    return true;
+  }
+
+  for(const DBusMethodTable *node = interface->methods; NULL != node->name; node++)
+  {
+    if(dbus_message_is_method_call(pkg->message, interface->name, node->name)) {
+      pkg->method = node->function;
+      return false;
+    }
+  }
+
+  return true;
+}
+
 static DBusMethodFunction
 find_interface_method(DBusMessage *message, struct generic_data *generic_data)
 {
-  DBusMethodFunction method = NULL;
+  const char *interface_name = dbus_message_get_interface(message);
+  struct interface_find_method_by_name_pkg pkg = {interface_name, message, NULL};
 
-  struct list *list, *next;
-  list_for_each_entry_safe(list, next, &generic_data->interfaces.head, head)
-  {
-    struct interface_data *interface      = list->data;
-    const char *           interface_name = dbus_message_get_interface(message);
+  sets_foreach(&generic_data->interfaces, interface_find_method_by_name, &pkg);
 
-    if(strcmp(interface->name, interface_name) != 0) {
-      continue;
-    }
-
-    for(const DBusMethodTable *node = interface->methods; NULL != node->name;
-        node++)
-    {
-      if(dbus_message_is_method_call(message, interface->name, node->name)) {
-        method = node->function;
-        break;
-      }
-    }
-
-    break;
-  }
-
-  return method;
+  return pkg.method;
 }
 
 static DBusMessage *
