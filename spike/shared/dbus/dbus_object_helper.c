@@ -86,9 +86,9 @@ void generate_interface_xml(struct string *gstr, struct interface_data *iface)
   }
 }
 
-void generate_introspection_xml(DBusConnection *     conn,
-                                struct generic_data *data,
-                                const char *         path)
+void generate_introspection_xml(DBusConnection *    conn,
+                                struct dbus_object *data,
+                                const char *        path)
 {
   struct list *  list;
   struct string *gstr;

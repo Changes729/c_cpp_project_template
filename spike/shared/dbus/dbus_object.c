@@ -19,7 +19,7 @@
 static DBusHandlerResult
 server_message_handler(DBusConnection *, DBusMessage *, void *user_data);
 static DBusMethodFunction
-find_interface_method(DBusMessage *, struct generic_data *);
+find_interface_method(DBusMessage *, struct dbus_object *);
 
 static DBusMessage *introspect(DBusConnection *, DBusMessage *, void *user_data);
 
@@ -97,7 +97,7 @@ static const DBusObjectPathVTable server_vtable = {
     .message_function = server_message_handler,
 };
 
-static struct generic_data generic_data = {
+static struct dbus_object dbus_object = {
     .path = "/",
 };
 
@@ -105,31 +105,31 @@ static struct generic_data generic_data = {
 /* Private function ----------------------------------------------------------*/
 void register_dbus_object_path(DBusConnection *conn)
 {
-  sets_add(&generic_data.interfaces, &interface_introspectable);
-  sets_add(&generic_data.interfaces, &interface_properties);
-  sets_add(&generic_data.interfaces, &object_properties);
+  sets_add(&dbus_object.interfaces, &interface_introspectable);
+  sets_add(&dbus_object.interfaces, &interface_properties);
+  sets_add(&dbus_object.interfaces, &object_properties);
 
   dbus_connection_register_object_path(conn,
-                                       generic_data.path,
+                                       dbus_object.path,
                                        &server_vtable,
-                                       &generic_data);
+                                       &dbus_object);
 }
 
 void unregister_dbus_object_path(DBusConnection *conn)
 {
-  dbus_connection_unregister_object_path(conn, generic_data.path);
+  dbus_connection_unregister_object_path(conn, dbus_object.path);
 
-  sets_remove(&generic_data.interfaces, &object_properties);
-  sets_remove(&generic_data.interfaces, &interface_properties);
-  sets_remove(&generic_data.interfaces, &interface_introspectable);
-  free(generic_data.introspect);
-  generic_data.introspect = NULL;
+  sets_remove(&dbus_object.interfaces, &object_properties);
+  sets_remove(&dbus_object.interfaces, &interface_properties);
+  sets_remove(&dbus_object.interfaces, &interface_introspectable);
+  free(dbus_object.introspect);
+  dbus_object.introspect = NULL;
 }
 
 static DBusHandlerResult
 server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
 {
-  struct generic_data *generic_data = data;
+  struct dbus_object *dbus_object = data;
 
   DBusHandlerResult  result   = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   DBusMessage *      reply    = NULL;
@@ -142,14 +142,14 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
          dbus_message_get_path(message));
 
   do {
-    if(strcmp(dbus_message_get_path(message), generic_data->path) != 0) {
+    if(strcmp(dbus_message_get_path(message), dbus_object->path) != 0) {
       break;
     }
 
     dbus_error_init(&err);
 
     result   = DBUS_HANDLER_RESULT_HANDLED;
-    function = find_interface_method(message, generic_data);
+    function = find_interface_method(message, dbus_object);
     if(NULL == function) {
       dbus_set_error_const(&err, ERROR_INTERFACE ".Failed", "no such method.");
     } else {
@@ -206,12 +206,12 @@ int interface_find_method_by_name(void *data, void *user_data)
 }
 
 static DBusMethodFunction
-find_interface_method(DBusMessage *message, struct generic_data *generic_data)
+find_interface_method(DBusMessage *message, struct dbus_object *dbus_object)
 {
   const char *interface_name = dbus_message_get_interface(message);
   struct interface_find_method_by_name_pkg pkg = {interface_name, message, NULL};
 
-  sets_foreach(&generic_data->interfaces, interface_find_method_by_name, &pkg);
+  sets_foreach(&dbus_object->interfaces, interface_find_method_by_name, &pkg);
 
   return pkg.method;
 }
@@ -219,8 +219,8 @@ find_interface_method(DBusMessage *message, struct generic_data *generic_data)
 static DBusMessage *
 introspect(DBusConnection *connection, DBusMessage *message, void *user_data)
 {
-  struct generic_data *data  = user_data;
-  DBusMessage *        reply = NULL;
+  struct dbus_object *data  = user_data;
+  DBusMessage *       reply = NULL;
 
   reply = dbus_message_new_method_return(message);
   if(reply == NULL) {
