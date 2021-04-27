@@ -14,14 +14,6 @@ extern "C" {
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
 // FIXME:
-struct string
-{
-  char * buffer;
-  size_t length;
-  size_t buffer_size;
-};
-
-// FIXME:
 struct interface_data
 {
   char *                   name;
