@@ -109,7 +109,16 @@ void register_dbus_object_path(DBusConnection *conn)
 
 void unregister_dbus_object_path(DBusConnection *conn)
 {
-  // FIXME: mem leak.
+  dbus_object_t *dbus_object;
+  if(!dbus_connection_get_object_path_data(conn, root.path, (void *)&dbus_object) ||
+     dbus_object == NULL)
+  {
+    return;
+  }
+
+  remove_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
+  remove_interface(dbus_object, DBUS_INTERFACE_PROPERTIES);
+  remove_interface(dbus_object, DBUS_INTERFACE_OBJECT_MANAGER);
   detach_dbus_object(conn, root.path);
 }
 
@@ -171,18 +180,23 @@ __end:
 void detach_dbus_object(DBusConnection *conn, const char *path)
 {
   dbus_object_t *dbus_object;
-  if(dbus_connection_get_object_path_data(conn, path, (void *)&dbus_object) ==
-     FALSE)
+  if(!dbus_connection_get_object_path_data(conn, path, (void *)&dbus_object) ||
+     NULL == dbus_object)
   {
     goto __end;
   }
 
   // todo: notify InterfacesRemoved.
+  sets_cleanup(&dbus_object->removed);
   remove_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
   // todo: notify PropertiesChanged
   // todo: invalidate_parent_data(dbus_object->conn, dbus_object->path);
 
   dbus_connection_unregister_object_path(dbus_object->conn, dbus_object->path);
+
+  free(dbus_object->path);
+  free(dbus_object->introspect);
+  free(dbus_object);
 
 __end:
   return;
