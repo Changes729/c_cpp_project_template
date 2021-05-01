@@ -11,12 +11,12 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef enum io_notice_type {
+enum io_notice_type {
   IO_NOTICE_READ  = 1 << 0,
   IO_NOTICE_WRITE = 1 << 1,
   IO_NOTICE_ERR   = 1 << 2,
   IO_NOTICE_HUP   = 1 << 3,
-} io_notice_type;
+};
 
 /* Public template -----------------------------------------------------------*/
 typedef struct
@@ -28,6 +28,10 @@ typedef struct
 typedef void (*fd_callback_t)(void* user_data, fd_desc_t pkg);
 
 /* Public function prototypes ------------------------------------------------*/
+/** select, poll ---------------------------------------------------*/
+bool io_epoll_fd_init();
+void io_epoll_fd_deinit();
+
 void io_flush_select(/*timeout*/);
 void io_flush_poll(/*timeout*/);
 void io_flush_epoll(/*timeout*/);

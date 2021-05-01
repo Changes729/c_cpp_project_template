@@ -1,8 +1,11 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "io-flush.h"
+
+#define USE_EPOLL 1
 
 static bool _quit = false;
 
@@ -14,7 +17,8 @@ static void stdin_callback(void* user_data, fd_desc_t pkg)
   if(result > 0) {
     printf("%s\n", buffer);
 
-    if(strncmp("quit", buffer, strlen("quit")) == 0) {
+    size_t len = strlen("quit");
+    if(strncmp("quit", buffer, len) == 0 && !isgraph(buffer[len])) {
       _quit = true;
 
       io_ignore_file(0);
@@ -24,11 +28,24 @@ static void stdin_callback(void* user_data, fd_desc_t pkg)
 
 int main(void)
 {
+#if USE_EPOLL
+  io_epoll_fd_init();
+#endif
+
   io_notice_file((fd_desc_t){0, IO_NOTICE_READ}, stdin_callback, NULL);
 
   while(!_quit) {
-    io_flush_select();
+#if USE_EPOLL
+    io_flush_epoll();
+#else
+    // io_flush_select();
+    io_flush_poll();
+#endif
   }
+
+#if USE_EPOLL
+  io_epoll_fd_deinit();
+#endif
 
   return 0;
 }

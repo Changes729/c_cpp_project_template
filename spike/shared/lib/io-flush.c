@@ -3,7 +3,10 @@
 /* Private include -----------------------------------------------------------*/
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/epoll.h>
+#include <sys/poll.h>
 #include <sys/select.h>
+#include <unistd.h>
 
 #include "list.h"
 
@@ -27,10 +30,29 @@ typedef struct
 
 /* Private template ----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-io_list_head_t io_list_head = {.head = {&io_list_head.head, &io_list_head.head}};
+static io_list_head_t io_list_head = {
+    .head = {&io_list_head.head, &io_list_head.head}};
+static int _epoll_fd = -1;
 
 /* Private function prototypes -----------------------------------------------*/
+static void remove_node(io_node_t* node, bool later);
+
 /* Private function ----------------------------------------------------------*/
+bool io_epoll_fd_init()
+{
+  assert(_epoll_fd == -1);
+
+  _epoll_fd = epoll_create1(0);
+
+  return _epoll_fd != -1;
+}
+
+void io_epoll_fd_deinit()
+{
+  if(_epoll_fd != -1) close(_epoll_fd);
+  _epoll_fd = -1;
+}
+
 void io_flush_select(/*timeout*/)
 {
   fd_set descriptors_read;
@@ -86,15 +108,84 @@ void io_flush_select(/*timeout*/)
   list_for_each_entry_safe(remove, node, &io_list_head.head, node)
   {
     if(remove->ignore) {
-      list_del(&remove->node);
-      free(remove);
+      remove_node(remove, false);
     }
   }
 }
 
-void io_flush_poll(/*timeout*/) {}
+void io_flush_poll(/*timeout*/)
+{
+  struct pollfd fds[io_list_head.count];
+  short         cond  = 0;
+  size_t        index = 0;
 
-void io_flush_epoll(/*timeout*/) {}
+  // set fds.
+  io_node_t* node;
+  list_for_each_entry(node, &io_list_head.head, node)
+  {
+    if(node->pkg.flag & IO_NOTICE_READ) cond |= POLLIN;
+    if(node->pkg.flag & IO_NOTICE_WRITE) cond |= POLLOUT;
+    if(node->pkg.flag & IO_NOTICE_ERR) cond |= POLLERR;
+    if(node->pkg.flag & IO_NOTICE_HUP) cond |= POLLHUP;
+
+    fds[index++] = (struct pollfd){node->pkg.fd, cond, 0};
+  }
+
+  poll(fds, index, -1);
+
+  // map fds.
+  index = 0;
+  list_for_each_entry(node, &io_list_head.head, node)
+  {
+    short flags   = 0;
+    short revents = fds[index++].revents;
+    if(!node->ignore && revents != 0) {
+      if(revents & POLLIN) flags |= IO_NOTICE_READ;
+      if(revents & POLLOUT) flags |= IO_NOTICE_WRITE;
+      if(revents & POLLERR) flags |= IO_NOTICE_ERR;
+      if(revents & POLLHUP) flags |= IO_NOTICE_HUP;
+
+      node->callback(node->user_data, (fd_desc_t){node->pkg.fd, flags});
+    }
+  }
+
+  io_node_t* remove;
+  list_for_each_entry_safe(remove, node, &io_list_head.head, node)
+  {
+    if(remove->ignore) {
+      remove_node(remove, false);
+    }
+  }
+}
+
+void io_flush_epoll(/*timeout*/)
+{
+  struct epoll_event evs[io_list_head.count];
+  int                nfds = epoll_wait(_epoll_fd, evs, io_list_head.count, -1);
+
+  for(size_t i = 0; i < nfds; ++i) {
+    io_node_t* node    = evs[i].data.ptr;
+    short      flags   = 0;
+    uint32_t   revents = evs[i].events;
+
+    if(!node->ignore && revents != 0) {
+      if(revents & POLLIN) flags |= IO_NOTICE_READ;
+      if(revents & POLLOUT) flags |= IO_NOTICE_WRITE;
+      if(revents & POLLERR) flags |= IO_NOTICE_ERR;
+      if(revents & POLLHUP) flags |= IO_NOTICE_HUP;
+
+      node->callback(node->user_data, (fd_desc_t){node->pkg.fd, flags});
+    }
+  }
+
+  io_node_t *node, *remove;
+  list_for_each_entry_safe(remove, node, &io_list_head.head, node)
+  {
+    if(remove->ignore) {
+      remove_node(remove, false);
+    }
+  }
+}
 
 bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
 {
@@ -106,6 +197,18 @@ bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
   node->user_data = user_data;
   node->ignore    = false;
   list_add_tail(&node->node, &io_list_head.head);
+  io_list_head.count++;
+
+  if(_epoll_fd != -1) {
+    uint32_t cond = 0;
+    if(node->pkg.flag & IO_NOTICE_READ) cond |= POLLIN;
+    if(node->pkg.flag & IO_NOTICE_WRITE) cond |= POLLOUT;
+    if(node->pkg.flag & IO_NOTICE_ERR) cond |= POLLERR;
+    if(node->pkg.flag & IO_NOTICE_HUP) cond |= POLLHUP;
+
+    struct epoll_event data = {.events = cond, .data = {.ptr = node}};
+    epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, node->pkg.fd, &data);
+  }
 }
 
 void io_ignore_file(int fd)
@@ -114,8 +217,23 @@ void io_ignore_file(int fd)
   list_for_each_entry(node, &io_list_head.head, node)
   {
     if(node->pkg.fd == fd) {
-      node->ignore = true;
+      remove_node(node, true);
       break;
     }
+  }
+}
+
+static void remove_node(io_node_t* node, bool later)
+{
+  if(later) {
+    node->ignore = true;
+  } else {
+    if(_epoll_fd != -1) {
+      epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, node->pkg.fd, NULL);
+    }
+
+    list_del(&node->node);
+    free(node);
+    io_list_head.count--;
   }
 }
