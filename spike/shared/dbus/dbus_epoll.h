@@ -15,8 +15,7 @@ extern "C" {
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
 dbus_bool_t _add_watch(DBusWatch *, void *data);
-void _remove_watch(DBusWatch *, void *data);
-void _run_loop_dbus(DBusConnection* connection);
+void        _remove_watch(DBusWatch *, void *data);
 
 #ifdef __cplusplus
 }

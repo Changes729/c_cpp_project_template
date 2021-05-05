@@ -8,6 +8,7 @@
 #include "dbus_epoll.h"
 #include "dbus_helper.h"
 #include "dbus_object.h"
+#include "io-flush.h"
 
 static void dbus_main_loop(DBusConnection *dbus_address);
 static void sigint_handler(int param);
@@ -65,7 +66,10 @@ __failed:
 static void dbus_main_loop(DBusConnection *dbus_address)
 {
   while(TRUE) {
-    _run_loop_dbus(dbus_address);
+    io_flush_select();
+
+    while(dbus_connection_dispatch(dbus_address) == DBUS_DISPATCH_DATA_REMAINS) {
+    }
   }
 }
 
