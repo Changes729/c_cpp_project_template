@@ -1,23 +1,27 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_EPOLL_H
-#define _DBUS_EPOLL_H
+#ifndef _STRING_BUFFER_H
+#define _STRING_BUFFER_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <dbus/dbus.h>
+#include <string.h>
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /* Public define -------------------------------------------------------------*/
+typedef struct string string_t;
+
 /* Public typedef ------------------------------------------------------------*/
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-dbus_bool_t _add_watch(DBusWatch *, void *data);
-void        _remove_watch(DBusWatch *, void *data);
+string_t *string_new(const char *str);
+void      string_delete(string_t *string);
+int       string_append_printf(string_t *, const char *format, ...);
+
+const char *string_c_str(string_t *string);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_EPOLL_H */
+#endif /* _STRING_BUFFER_H */

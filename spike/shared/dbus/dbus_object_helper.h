@@ -5,7 +5,7 @@
 /* Public include ------------------------------------------------------------*/
 #include <dbus_helper.h>
 
-#include "glike-list.h"
+#include "set-list.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -13,47 +13,40 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-// FIXME:
-struct string
-{
-  char * buffer;
-  size_t length;
-  size_t buffer_size;
-};
-
-// FIXME:
 struct interface_data
 {
   char *                   name;
   const DBusMethodTable *  methods;
   const DBusSignalTable *  signals;
   const DBusPropertyTable *properties;
-  // GSList *pending_prop;
-  void *user_data;
-  // DBusDestroyFunction destroy;
+  sets_t                   pending_prop;
+  void *                   user_data;
+  DBusDestroyFunction      destroy;
 };
 
-// FIXME:
-struct generic_data
+struct dbus_object
 {
-  // unsigned int refcount;
-  // DBusConnection *conn;
-  char * path;
-  list_t interfaces;
-  // GSList *objects;
-  // GSList *added;
-  // GSList *removed;
-  // guint process_id;
-  // gboolean pending_prop;
-  char *introspect;
-  // struct generic_data *parent;
+  DBusConnection *    conn;
+  char *              path;
+  char *              introspect;
+  sets_t              interfaces;
+  sets_t              added;
+  sets_t              removed;
+  sets_t              objects;
+  struct dbus_object *parent;
+  bool                pending_prop;
 };
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void generate_introspection_xml(DBusConnection *     conn,
-                                struct generic_data *data,
-                                const char *         path);
+void generate_introspection_xml(DBusConnection *    conn,
+                                struct dbus_object *data,
+                                const char *        path);
+
+void interface_sets_init(sets_t *sets);
+bool find_interface_by_name(struct dbus_object *    dbus_object,
+                            const char *            name,
+                            struct interface_data **interface);
 
 #ifdef __cplusplus
 }

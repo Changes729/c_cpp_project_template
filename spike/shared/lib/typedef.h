@@ -13,7 +13,7 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef void (*Function_t)(void* data, void* user_data);
+typedef int (*Function_t)(void* data, void* user_data);
 typedef void (*DestroyCallback_t)(void* data);
 typedef int (*CompareCallback_t)(const void* a, const void* b);
 typedef void (*CompareCallbackFull_t)(const void* a,

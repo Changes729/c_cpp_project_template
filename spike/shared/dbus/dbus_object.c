@@ -19,7 +19,7 @@
 static DBusHandlerResult
 server_message_handler(DBusConnection *, DBusMessage *, void *user_data);
 static DBusMethodFunction
-find_interface_method(DBusMessage *, struct generic_data *);
+find_interface_method(DBusMessage *, struct dbus_object *);
 
 static DBusMessage *introspect(DBusConnection *, DBusMessage *, void *user_data);
 
@@ -69,35 +69,11 @@ static const DBusSignalTable object_signals[] = {
     {},
 };
 
-static struct interface_data interface_introspectable = {
-    .name       = DBUS_INTERFACE_INTROSPECTABLE,
-    .methods    = introspect_methods,
-    .signals    = NULL,
-    .properties = NULL,
-    .user_data  = NULL,
-};
-
-static struct interface_data interface_properties = {
-    .name       = DBUS_INTERFACE_PROPERTIES,
-    .methods    = properties_methods,
-    .signals    = properties_signals,
-    .properties = NULL,
-    .user_data  = NULL,
-};
-
-static struct interface_data object_properties = {
-    .name       = DBUS_INTERFACE_PROPERTIES,
-    .methods    = object_methods,
-    .signals    = object_signals,
-    .properties = NULL,
-    .user_data  = NULL,
-};
-
 static const DBusObjectPathVTable server_vtable = {
     .message_function = server_message_handler,
 };
 
-static struct generic_data generic_data = {
+static struct dbus_object root = {
     .path = "/",
 };
 
@@ -105,31 +81,210 @@ static struct generic_data generic_data = {
 /* Private function ----------------------------------------------------------*/
 void register_dbus_object_path(DBusConnection *conn)
 {
-  list_append(&generic_data.interfaces, &interface_introspectable);
-  list_append(&generic_data.interfaces, &interface_properties);
-  list_append(&generic_data.interfaces, &object_properties);
+  struct dbus_object *data = attach_dbus_object(conn, root.path);
+  if(data == NULL) return;
 
-  dbus_connection_register_object_path(conn,
-                                       generic_data.path,
-                                       &server_vtable,
-                                       &generic_data);
+  add_interface(data,
+                DBUS_INTERFACE_INTROSPECTABLE,
+                introspect_methods,
+                NULL,
+                NULL,
+                data,
+                NULL);
+  add_interface(data,
+                DBUS_INTERFACE_PROPERTIES,
+                properties_methods,
+                properties_signals,
+                NULL,
+                data,
+                NULL);
+  add_interface(data,
+                DBUS_INTERFACE_OBJECT_MANAGER,
+                object_methods,
+                object_signals,
+                NULL,
+                data,
+                NULL);
 }
 
 void unregister_dbus_object_path(DBusConnection *conn)
 {
-  dbus_connection_unregister_object_path(conn, generic_data.path);
+  dbus_object_t *dbus_object;
+  if(!dbus_connection_get_object_path_data(conn, root.path, (void *)&dbus_object) ||
+     dbus_object == NULL)
+  {
+    return;
+  }
 
-  list_remove(&generic_data.interfaces, &object_properties);
-  list_remove(&generic_data.interfaces, &interface_properties);
-  list_remove(&generic_data.interfaces, &interface_introspectable);
-  free(generic_data.introspect);
-  generic_data.introspect = NULL;
+  remove_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
+  remove_interface(dbus_object, DBUS_INTERFACE_PROPERTIES);
+  remove_interface(dbus_object, DBUS_INTERFACE_OBJECT_MANAGER);
+  detach_dbus_object(conn, root.path);
+}
+
+dbus_object_t *attach_dbus_object(DBusConnection *conn, const char *path)
+{
+  dbus_object_t *dbus_object;
+  char *         path_dup       = NULL;
+  char *         introspect_dup = NULL;
+  if(dbus_connection_get_object_path_data(conn, path, (void *)&dbus_object) ==
+     TRUE)
+  {
+    if(dbus_object != NULL) goto __end;
+  }
+
+  dbus_object = malloc(sizeof(dbus_object_t));
+  path_dup    = strdup(path);
+  introspect_dup =
+      strdup(DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE "<node></node>");
+  if(dbus_object == NULL || path_dup == NULL || introspect_dup == NULL) {
+    goto __failed;
+  }
+
+  memset(dbus_object, 0, sizeof(dbus_object_t));
+  dbus_object->conn       = conn;
+  dbus_object->path       = path_dup;
+  dbus_object->introspect = introspect_dup;
+  interface_sets_init(&dbus_object->interfaces);
+  interface_sets_init(&dbus_object->objects);
+  interface_sets_init(&dbus_object->added);
+  sets_init(&dbus_object->removed, NULL, free);
+
+  if(dbus_connection_register_object_path(conn, path, &server_vtable, dbus_object) ==
+     TRUE)
+  {
+    // todo: invalidate_parent_data(connection, path);
+    if(add_interface(dbus_object,
+                     DBUS_INTERFACE_INTROSPECTABLE,
+                     introspect_methods,
+                     NULL,
+                     NULL,
+                     conn,
+                     NULL) == TRUE)
+    {
+      // todo: notify InterfacesAdded.
+      // todo: notify PropertiesChanged on idle.
+      goto __end;
+    }
+  }
+
+__failed:
+  free(dbus_object);
+  free(path_dup);
+  free(introspect_dup);
+
+__end:
+  return dbus_object;
+}
+
+void detach_dbus_object(DBusConnection *conn, const char *path)
+{
+  dbus_object_t *dbus_object;
+  if(!dbus_connection_get_object_path_data(conn, path, (void *)&dbus_object) ||
+     NULL == dbus_object)
+  {
+    goto __end;
+  }
+
+  // todo: notify InterfacesRemoved.
+  sets_cleanup(&dbus_object->removed);
+  remove_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
+  // todo: notify PropertiesChanged
+  // todo: invalidate_parent_data(dbus_object->conn, dbus_object->path);
+
+  dbus_connection_unregister_object_path(dbus_object->conn, dbus_object->path);
+
+  free(dbus_object->path);
+  free(dbus_object->introspect);
+  free(dbus_object);
+
+__end:
+  return;
+}
+
+bool add_interface(dbus_object_t *          data,
+                   const char *             name,
+                   const DBusMethodTable *  methods,
+                   const DBusSignalTable *  signals,
+                   const DBusPropertyTable *properties,
+                   void *                   user_data,
+                   DBusDestroyFunction      destroy)
+{
+  interface_data_t *iface    = NULL;
+  char *            name_dup = NULL;
+  if(find_interface_by_name(data, name, &iface) == true) {
+    goto __end;
+  }
+
+  name_dup = strdup(name);
+  iface    = malloc(sizeof(interface_data_t));
+  if(name_dup == NULL || iface == NULL) {
+    goto __failed;
+  }
+
+  memset(iface, 0, sizeof(interface_data_t));
+  iface->name       = name_dup;
+  iface->methods    = methods;
+  iface->signals    = signals;
+  iface->properties = properties;
+  iface->user_data  = user_data;
+  iface->destroy    = destroy;
+
+  sets_add(&data->interfaces, iface);
+  if(sets_find(&data->interfaces, iface, NULL) == true) {
+    free(data->introspect);
+    data->introspect = NULL;
+    // todo: notify interfaceAdd.
+    goto __end;
+  }
+
+__failed:
+  free(name_dup);
+  free(iface);
+
+__end:
+  return iface != NULL;
+}
+
+void remove_interface(dbus_object_t *data, const char *name)
+{
+  interface_data_t *iface = NULL;
+  if(find_interface_by_name(data, name, &iface) == false) {
+    goto __end;
+  }
+
+  // todo: process_properties_from_interface(data, iface);
+  sets_remove(&data->interfaces, iface);
+
+  if(iface->destroy) {
+    iface->destroy(iface->user_data);
+    iface->user_data = NULL;
+  }
+
+  if(sets_find(&data->added, iface, NULL)) {
+    sets_remove(&data->added, iface);
+    goto __clean;
+  }
+
+  if(data->parent == NULL) {
+    goto __clean;
+  }
+
+  sets_add(&data->removed, iface->name);
+  iface->name = NULL;
+
+__clean:
+  free(iface->name);
+  free(iface);
+
+__end:
+  return;
 }
 
 static DBusHandlerResult
 server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
 {
-  struct generic_data *generic_data = data;
+  struct dbus_object *dbus_object = data;
 
   DBusHandlerResult  result   = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   DBusMessage *      reply    = NULL;
@@ -142,14 +297,14 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
          dbus_message_get_path(message));
 
   do {
-    if(strcmp(dbus_message_get_path(message), generic_data->path) != 0) {
+    if(strcmp(dbus_message_get_path(message), dbus_object->path) != 0) {
       break;
     }
 
     dbus_error_init(&err);
 
     result   = DBUS_HANDLER_RESULT_HANDLED;
-    function = find_interface_method(message, generic_data);
+    function = find_interface_method(message, dbus_object);
     if(NULL == function) {
       dbus_set_error_const(&err, ERROR_INTERFACE ".Failed", "no such method.");
     } else {
@@ -178,41 +333,49 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
   return result;
 }
 
-static DBusMethodFunction
-find_interface_method(DBusMessage *message, struct generic_data *generic_data)
+struct interface_find_method_by_name_pkg
 {
-  DBusMethodFunction method = NULL;
+  const char *       iface_name;
+  DBusMessage *      message;
+  DBusMethodFunction method;
+};
 
-  struct list *list, *next;
-  list_for_each_entry_safe(list, next, &generic_data->interfaces.head, head)
-  {
-    struct interface_data *interface      = list->data;
-    const char *           interface_name = dbus_message_get_interface(message);
+int interface_find_method_by_name(void *data, void *user_data)
+{
+  struct interface_find_method_by_name_pkg *pkg       = user_data;
+  struct interface_data *                   interface = data;
 
-    if(strcmp(interface->name, interface_name) != 0) {
-      continue;
-    }
-
-    for(const DBusMethodTable *node = interface->methods; NULL != node->name;
-        node++)
-    {
-      if(dbus_message_is_method_call(message, interface->name, node->name)) {
-        method = node->function;
-        break;
-      }
-    }
-
-    break;
+  if(strcmp(interface->name, pkg->iface_name) != 0) {
+    return true;
   }
 
-  return method;
+  for(const DBusMethodTable *node = interface->methods; NULL != node->name; node++)
+  {
+    if(dbus_message_is_method_call(pkg->message, interface->name, node->name)) {
+      pkg->method = node->function;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static DBusMethodFunction
+find_interface_method(DBusMessage *message, struct dbus_object *dbus_object)
+{
+  const char *interface_name = dbus_message_get_interface(message);
+  struct interface_find_method_by_name_pkg pkg = {interface_name, message, NULL};
+
+  sets_foreach(&dbus_object->interfaces, interface_find_method_by_name, &pkg);
+
+  return pkg.method;
 }
 
 static DBusMessage *
 introspect(DBusConnection *connection, DBusMessage *message, void *user_data)
 {
-  struct generic_data *data  = user_data;
-  DBusMessage *        reply = NULL;
+  struct dbus_object *data  = user_data;
+  DBusMessage *       reply = NULL;
 
   reply = dbus_message_new_method_return(message);
   if(reply == NULL) {
