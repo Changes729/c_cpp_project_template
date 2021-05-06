@@ -1,11 +1,11 @@
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _TYPEDEF_H
-#define _TYPEDEF_H
+#ifndef _TIMER_TASK_H
+#define _TIMER_TASK_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <stdbool.h>
 #include <stdint.h>
+
+#include "typedef.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -13,19 +13,17 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef void (*Operation_t)(void* data);
-typedef int (*Function_t)(void* data, void* user_data);
-typedef void (*DestroyCallback_t)(void* data);
-typedef int (*CompareCallback_t)(const void* a, const void* b);
-typedef void (*CompareCallbackFull_t)(const void* a,
-                                      const void* b,
-                                      void*       user_data);
-typedef void* (*CopyCallback_t)(const void* src, void* data);
+typedef struct _timer_task timer_task_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
+timer_task_t* timer_task_new(uint32_t ms, Operation_t operation, void* user_data);
+void          timer_task_del(timer_task_t*);
+
+void     timer_flush();
+uint32_t timer_next_alarm();
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _TYPEDEF_H */
+#endif /* _TIMER_TASK_H */

@@ -25,7 +25,9 @@ typedef list_t list_head_t;
 /* Public function prototypes ------------------------------------------------*/
 #define list_alloc(data) list_init(malloc(sizeof(list_t)), data)
 #define list_foreach(node, list)                                               \
-  if(!is_list_empty(list)) list_for_each_entry(node, &(list)->head, head)
+  if(!is_list_empty(list))                                                     \
+    for(__typeof__(*node) *__save__ = NULL; __save__ == NULL;)                 \
+  list_for_each_entry_safe(node, __save__, &(list)->head, head)
 
 inline static bool is_list_empty(const list_head_t *list_head)
 {

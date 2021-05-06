@@ -4,6 +4,7 @@
 #pragma once
 /* Public include ------------------------------------------------------------*/
 #include <stdbool.h>
+#include <stdint.h>
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -32,9 +33,9 @@ typedef void (*fd_callback_t)(void* user_data, fd_desc_t pkg);
 bool io_epoll_fd_init();
 void io_epoll_fd_deinit();
 
-void io_flush_select(/*timeout*/);
-void io_flush_poll(/*timeout*/);
-void io_flush_epoll(/*timeout*/);
+void io_flush_select(uint32_t ms);
+void io_flush_poll(uint32_t ms);
+void io_flush_epoll(uint32_t ms);
 
 bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data);
 void io_ignore_file(int fd);

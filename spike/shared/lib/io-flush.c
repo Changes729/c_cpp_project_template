@@ -35,7 +35,8 @@ static io_list_head_t io_list_head = {
 static int _epoll_fd = -1;
 
 /* Private function prototypes -----------------------------------------------*/
-static void remove_node(io_node_t* node, bool later);
+static void           remove_node(io_node_t* node, bool later);
+static struct timeval _translate_ms(uint32_t ms);
 
 /* Private function ----------------------------------------------------------*/
 bool io_epoll_fd_init()
@@ -53,12 +54,13 @@ void io_epoll_fd_deinit()
   _epoll_fd = -1;
 }
 
-void io_flush_select(/*timeout*/)
+void io_flush_select(uint32_t ms)
 {
-  fd_set descriptors_read;
-  fd_set descriptors_write;
-  fd_set descriptors_error;
-  int    highest_fd = -1;
+  struct timeval tv = _translate_ms(ms);
+  fd_set         descriptors_read;
+  fd_set         descriptors_write;
+  fd_set         descriptors_error;
+  int            highest_fd = -1;
 
   FD_ZERO(&descriptors_read);
   FD_ZERO(&descriptors_write);
@@ -90,7 +92,7 @@ void io_flush_select(/*timeout*/)
          &descriptors_read,
          &descriptors_write,
          &descriptors_error,
-         NULL);
+         &tv);
 
   // map fds.
   list_for_each_entry(node, &io_list_head.head, node)
@@ -113,7 +115,7 @@ void io_flush_select(/*timeout*/)
   }
 }
 
-void io_flush_poll(/*timeout*/)
+void io_flush_poll(uint32_t ms)
 {
   struct pollfd fds[io_list_head.count];
   short         cond  = 0;
@@ -131,7 +133,7 @@ void io_flush_poll(/*timeout*/)
     fds[index++] = (struct pollfd){node->pkg.fd, cond, 0};
   }
 
-  poll(fds, index, -1);
+  poll(fds, index, ms);
 
   // map fds.
   index = 0;
@@ -158,10 +160,10 @@ void io_flush_poll(/*timeout*/)
   }
 }
 
-void io_flush_epoll(/*timeout*/)
+void io_flush_epoll(uint32_t ms)
 {
   struct epoll_event evs[io_list_head.count];
-  int                nfds = epoll_wait(_epoll_fd, evs, io_list_head.count, -1);
+  int                nfds = epoll_wait(_epoll_fd, evs, io_list_head.count, ms);
 
   for(size_t i = 0; i < nfds; ++i) {
     io_node_t* node    = evs[i].data.ptr;
@@ -236,4 +238,9 @@ static void remove_node(io_node_t* node, bool later)
     free(node);
     io_list_head.count--;
   }
+}
+
+static struct timeval _translate_ms(uint32_t ms)
+{
+  return (struct timeval){ms / 1000, (ms - ms / 1000) * 1000};
 }

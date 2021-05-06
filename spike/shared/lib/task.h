@@ -1,11 +1,9 @@
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _TYPEDEF_H
-#define _TYPEDEF_H
+#ifndef _TASK_H
+#define _TASK_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <stdbool.h>
-#include <stdint.h>
+#include "typedef.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -13,19 +11,21 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef void (*Operation_t)(void* data);
-typedef int (*Function_t)(void* data, void* user_data);
-typedef void (*DestroyCallback_t)(void* data);
-typedef int (*CompareCallback_t)(const void* a, const void* b);
-typedef void (*CompareCallbackFull_t)(const void* a,
-                                      const void* b,
-                                      void*       user_data);
-typedef void* (*CopyCallback_t)(const void* src, void* data);
+typedef struct _task
+{
+  void*       data;
+  Operation_t operation;
+} task_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
+/* Public class --------------------------------------------------------------*/
+static inline void task_run(task_t task)
+{
+  return task.operation(task.data);
+}
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _TYPEDEF_H */
+#endif /* _TASK_H */
