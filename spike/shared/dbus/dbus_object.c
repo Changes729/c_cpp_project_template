@@ -10,28 +10,34 @@
 #include "dbus_error.h"
 #include "dbus_object_helper.h"
 #include "glike-list.h"
+#include "timer-task.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private template ----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static DBusHandlerResult
-server_message_handler(DBusConnection *, DBusMessage *, void *user_data);
-static DBusMethodFunction
-find_interface_method(DBusMessage *, struct dbus_object *);
+static DBusHandlerResult  server_message_handler(DBusConnection *,
+                                                 DBusMessage *,
+                                                 void *user_data);
+static DBusMethodFunction find_interface_method(DBusMessage *,
+                                                struct dbus_object *);
 
 static DBusMessage *introspect(DBusConnection *, DBusMessage *, void *user_data);
 
-static int append_object(void *data, void *user_data);
-static DBusMessage *
-get_objects(DBusConnection *connection, DBusMessage *message, void *user_data);
+static int          append_object(void *data, void *user_data);
+static DBusMessage *get_objects(DBusConnection *connection,
+                                DBusMessage *   message,
+                                void *          user_data);
 static void append_interfaces(struct dbus_object *data, DBusMessageIter *iter);
 static int  append_interface(void *data, void *user_data);
 
-static struct dbus_object *
-invalidate_parent_data(DBusConnection *conn, const char *child_path);
-static void emit_interfaces_added(struct dbus_object *data);
+static struct dbus_object *invalidate_parent_data(DBusConnection *conn,
+                                                  const char *    child_path);
+static void                emit_interfaces_added(struct dbus_object *data);
+
+static void event_idle(struct dbus_object *data);
+static void process_changes(void *user_data);
 
 /* Private variables ---------------------------------------------------------*/
 static DBusMethodTable introspect_methods[] = {
@@ -116,8 +122,23 @@ void register_dbus_object_path(DBusConnection *conn)
                 data,
                 NULL);
 
-  attach_dbus_object(conn, "/org/bluez");
-  attach_dbus_object(conn, "/org/bluez/hci0");
+  data = attach_dbus_object(conn, "/org/bluez");
+  add_interface(data,
+                DBUS_INTERFACE_INTROSPECTABLE,
+                introspect_methods,
+                NULL,
+                NULL,
+                data,
+                NULL);
+
+  data = attach_dbus_object(conn, "/org/bluez/hci0");
+  add_interface(data,
+                DBUS_INTERFACE_INTROSPECTABLE,
+                introspect_methods,
+                NULL,
+                NULL,
+                data,
+                NULL);
 }
 
 void unregister_dbus_object_path(DBusConnection *conn)
@@ -250,6 +271,8 @@ bool add_interface(dbus_object_t *          data,
   if(sets_find(&data->interfaces, iface, NULL) == true) {
     free(data->introspect);
     data->introspect = NULL;
+    sets_add(&data->added, iface);
+    event_idle(data);
     // todo: notify interfaceAdd.
     goto __end;
   }
@@ -297,8 +320,9 @@ __end:
   return;
 }
 
-static DBusHandlerResult
-server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
+static DBusHandlerResult server_message_handler(DBusConnection *conn,
+                                                DBusMessage *   message,
+                                                void *          data)
 {
   struct dbus_object *dbus_object = data;
 
@@ -376,8 +400,8 @@ int interface_find_method_by_name(void *data, void *user_data)
   return true;
 }
 
-static DBusMethodFunction
-find_interface_method(DBusMessage *message, struct dbus_object *dbus_object)
+static DBusMethodFunction find_interface_method(DBusMessage *       message,
+                                                struct dbus_object *dbus_object)
 {
   const char *interface_name = dbus_message_get_interface(message);
   struct interface_find_method_by_name_pkg pkg = {interface_name, message, NULL};
@@ -387,8 +411,9 @@ find_interface_method(DBusMessage *message, struct dbus_object *dbus_object)
   return pkg.method;
 }
 
-static DBusMessage *
-introspect(DBusConnection *connection, DBusMessage *message, void *user_data)
+static DBusMessage *introspect(DBusConnection *connection,
+                               DBusMessage *   message,
+                               void *          user_data)
 {
   struct dbus_object *data  = user_data;
   DBusMessage *       reply = NULL;
@@ -520,8 +545,9 @@ static int append_object(void *data, void *user_data)
   return true;
 }
 
-static DBusMessage *
-get_objects(DBusConnection *connection, DBusMessage *message, void *user_data)
+static DBusMessage *get_objects(DBusConnection *connection,
+                                DBusMessage *   message,
+                                void *          user_data)
 {
   struct dbus_object *data = user_data;
   DBusMessage *       reply;
@@ -557,8 +583,8 @@ get_objects(DBusConnection *connection, DBusMessage *message, void *user_data)
   return reply;
 }
 
-static struct dbus_object *
-invalidate_parent_data(DBusConnection *conn, const char *child_path)
+static struct dbus_object *invalidate_parent_data(DBusConnection *conn,
+                                                  const char *    child_path)
 {
   struct dbus_object *data = NULL, *child = NULL, *parent = NULL;
   char *              parent_path, *slash;
@@ -679,20 +705,23 @@ static void emit_interfaces_removed(struct dbus_object *data)
   dbus_message_unref(signal);
 }
 
-static bool process_changes(void *user_data)
+static void event_idle(struct dbus_object *data)
+{
+  timer_task_new(0, process_changes, data);
+}
+
+static void process_changes(void *user_data)
 {
   struct dbus_object *data = user_data;
 
-  remove_pending(data);
+  // remove_pending(data);
 
   if(sets_length(&data->added) > 0) emit_interfaces_added(data);
 
   /* Flush pending properties */
-  if(data->pending_prop == TRUE) process_property_changes(data);
+  // if(data->pending_prop == TRUE) process_property_changes(data);
 
   if(sets_length(&data->removed) > 0) emit_interfaces_removed(data);
 
   // data->process_id = 0;
-
-  return FALSE;
 }

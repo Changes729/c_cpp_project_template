@@ -72,6 +72,9 @@ int main(int agrc, char *argv[])
     goto __failed;
   }
 
+  // todo:
+  // dbus_connection_set_timeout_functions(dbus_address, )
+
   dbus_connection_set_dispatch_status_function(dbus_address,
                                                dbus_dispatch_status,
                                                NULL,
@@ -92,8 +95,10 @@ __failed:
 static void dbus_main_loop(DBusConnection *dbus_address)
 {
   while(TRUE) {
-    io_flush_select(timer_next_alarm());
+    io_flush_select(timer_next_alarm() >> 1);
 
+    while(dbus_connection_dispatch(dbus_address) == DBUS_DISPATCH_DATA_REMAINS)
+      ;
     timer_flush();
   }
 }
