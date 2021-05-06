@@ -146,48 +146,48 @@ struct DBusSecurityTable
   DBusSecurityFunction function;
 };
 
-#define DBus_ARGS(args...)                                                     \
+#define DBUS_ARGS(args...)                                                     \
   (const DBusArgInfo[])                                                        \
   {                                                                            \
     args, {}                                                                   \
   }
 
-#define DBus_METHOD(_name, _in_args, _out_args, _function)                     \
+#define DBUS_METHOD(_name, _in_args, _out_args, _function)                     \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function
 
-#define DBus_ASYNC_METHOD(_name, _in_args, _out_args, _function)               \
+#define DBUS_ASYNC_METHOD(_name, _in_args, _out_args, _function)               \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function, .flags = G_DBUS_METHOD_FLAG_ASYNC
 
-#define DBus_DEPRECATED_METHOD(_name, _in_args, _out_args, _function)          \
+#define DBUS_DEPRECATED_METHOD(_name, _in_args, _out_args, _function)          \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function, .flags = G_DBUS_METHOD_FLAG_DEPRECATED
 
-#define DBus_DEPRECATED_ASYNC_METHOD(_name, _in_args, _out_args, _function)    \
+#define DBUS_DEPRECATED_ASYNC_METHOD(_name, _in_args, _out_args, _function)    \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function,                                                       \
   .flags    = G_DBUS_METHOD_FLAG_ASYNC | G_DBUS_METHOD_FLAG_DEPRECATED
 
-#define DBus_EXPERIMENTAL_METHOD(_name, _in_args, _out_args, _function)        \
+#define DBUS_EXPERIMENTAL_METHOD(_name, _in_args, _out_args, _function)        \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function, .flags = G_DBUS_METHOD_FLAG_EXPERIMENTAL
 
-#define DBus_EXPERIMENTAL_ASYNC_METHOD(_name, _in_args, _out_args, _function)  \
+#define DBUS_EXPERIMENTAL_ASYNC_METHOD(_name, _in_args, _out_args, _function)  \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function,                                                       \
   .flags    = G_DBUS_METHOD_FLAG_ASYNC | G_DBUS_METHOD_FLAG_EXPERIMENTAL
 
-#define DBus_NOREPLY_METHOD(_name, _in_args, _out_args, _function)             \
+#define DBUS_NOREPLY_METHOD(_name, _in_args, _out_args, _function)             \
   .name = _name, .in_args = _in_args, .out_args = _out_args,                   \
   .function = _function, .flags = G_DBUS_METHOD_FLAG_NOREPLY
 
-#define DBus_SIGNAL(_name, _args) .name = _name, .args = _args
+#define DBUS_SIGNAL(_name, _args) .name = _name, .args = _args
 
-#define DBus_DEPRECATED_SIGNAL(_name, _args)                                   \
+#define DBUS_DEPRECATED_SIGNAL(_name, _args)                                   \
   .name = _name, .args = _args, .flags = G_DBUS_SIGNAL_FLAG_DEPRECATED
 
-#define DBus_EXPERIMENTAL_SIGNAL(_name, _args)                                 \
+#define DBUS_EXPERIMENTAL_SIGNAL(_name, _args)                                 \
   .name = _name, .args = _args, .flags = G_DBUS_SIGNAL_FLAG_EXPERIMENTAL
 
 void g_dbus_set_flags(int flags);
