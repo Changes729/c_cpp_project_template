@@ -9,7 +9,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "list.h"
+#include "list-define.h"
 
 typedef struct DBusArgInfo       DBusArgInfo;
 typedef struct DBusMethodTable   DBusMethodTable;
