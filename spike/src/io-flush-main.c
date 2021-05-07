@@ -36,15 +36,15 @@ int main(void)
 
   while(!_quit) {
 #if USE_EPOLL
-    io_flush_epoll();
+    io_flush_epoll(UINT32_MAX);
 #else
     // io_flush_select();
-    io_flush_poll();
+    io_flush_poll(UINT32_MAX);
 #endif
   }
 
 #if USE_EPOLL
-  io_epoll_fd_deinit();
+  io_epoll_fd_deinit(UINT32_MAX);
 #endif
 
   return 0;
