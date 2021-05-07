@@ -17,10 +17,10 @@
 struct _timer_task
 {
   task_t          task;
-  struct timespec tstart;
+  struct timespec tend;
   uint32_t        alarm;
 
-  bool ignore;
+  bool remove;
 };
 
 /* Private template ----------------------------------------------------------*/
@@ -29,24 +29,42 @@ list_head_t _timer_tasks;
 
 /* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static struct timespec _calculate_end_time(uint32_t ms);
+static double          _cmp_timespec(struct timespec* a, struct timespec* b);
+static void            _timer_after_loop();
+
 /* Private function ----------------------------------------------------------*/
-/* Private class function ----------------------------------------------------*/
-timer_task_t* timer_task_new(uint32_t ms, Operation_t operation, void* user_data)
+timer_task_t* timer_task_new(uint32_t ms, operation_cb_t operation, void* user_data)
 {
   struct _timer_task* task = malloc(sizeof(*task));
   if(task != NULL) {
     task->task   = (task_t){.data = user_data, .operation = operation};
     task->alarm  = ms;
-    task->ignore = false;
-    clock_gettime(CLOCK_MONOTONIC, &task->tstart);
-    list_append(&_timer_tasks, task);
+    task->remove = false;
+    task->tend   = _calculate_end_time(ms);
+
+    // find a later one and insert.
+    list_t* find = NULL;
+    list_foreach_r(list_node, &_timer_tasks)
+    {
+      struct _timer_task* find_task = list_node->data;
+      if(_cmp_timespec(&find_task->tend, &task->tend) > 0) {
+        find = list_node;
+        break;
+      }
+    }
+
+    if(list_prepend(&_timer_tasks, task, find) == NULL) {
+      free(task);
+      task = NULL;
+    }
   }
   return task;
 }
 
 void timer_task_del(timer_task_t* task)
 {
-  task->ignore = true;
+  task->remove = true;
 }
 
 void timer_flush()
@@ -55,27 +73,16 @@ void timer_flush()
 
   clock_gettime(CLOCK_MONOTONIC, &tnow);
 
-  list_t* node;
-  list_foreach(node, &_timer_tasks)
+  struct _timer_task* task;
+  list_foreach_data(task, &_timer_tasks)
   {
-    struct _timer_task* task = node->data;
-    uint32_t            diff = (tnow.tv_sec - task->tstart.tv_sec) * 1000 +
-                    (tnow.tv_nsec - task->tstart.tv_nsec) / 1000000;
-
-    if(!task->ignore && diff >= task->alarm) {
+    if(!task->remove && _cmp_timespec(&tnow, &task->tend) >= 0) {
       task_run(task->task);
-      task->ignore = true;
+      task->remove = true;
     }
   }
 
-  list_foreach(node, &_timer_tasks)
-  {
-    struct _timer_task* task = node->data;
-    if(task->ignore) {
-      list_free(list_node_remove(node));
-      free(task);
-    }
-  }
+  _timer_after_loop();
 }
 
 uint32_t timer_next_alarm()
@@ -85,20 +92,54 @@ uint32_t timer_next_alarm()
 
   clock_gettime(CLOCK_MONOTONIC, &tnow);
 
-  list_t* node;
-  list_foreach(node, &_timer_tasks)
+  struct _timer_task* task;
+  list_foreach_data(task, &_timer_tasks)
   {
-    struct _timer_task* task = node->data;
-    uint32_t            diff = (tnow.tv_sec - task->tstart.tv_sec) * 1000 +
-                    (tnow.tv_nsec - task->tstart.tv_nsec) / 1000000;
-
-    if(diff >= task->alarm) {
-      ms = 0;
-      break;
-    } else if(ms > task->alarm - diff) {
-      ms = task->alarm - diff;
-    }
+    double time = _cmp_timespec(&task->tend, &tnow);
+    ms          = (time < 0) ? 0 : (uint32_t)(time) + 1;
+    break;
   }
 
   return ms;
+}
+
+static struct timespec _calculate_end_time(uint32_t ms)
+{
+  struct timespec time;
+  clock_gettime(CLOCK_MONOTONIC, &time);
+
+  double ns   = ms * 1e6;
+  double curr = time.tv_sec * 1e9 + time.tv_nsec + ns;
+
+  time.tv_sec  = curr * 1e-9;
+  time.tv_nsec = curr - time.tv_sec * 1e9;
+
+  return time;
+}
+
+static double _cmp_timespec(struct timespec* a, struct timespec* b)
+{
+  double ta = a->tv_sec * 1e9 + a->tv_nsec;
+  double tb = b->tv_sec * 1e9 + b->tv_nsec;
+
+  return (ta - tb) * 1e-6;
+}
+
+static void _timer_after_loop()
+{
+  struct _timer_task* task;
+  bool                remove = false;
+  list_foreach(list_node, &_timer_tasks)
+  {
+    task = list_node->data;
+    if(remove) {
+      free(list_node_remove(list_get_prev(&_timer_tasks, list_node)));
+    }
+
+    remove = task->remove;
+  }
+
+  if(remove) {
+    free(list_node_remove(list_get_last(&_timer_tasks)));
+  }
 }

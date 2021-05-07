@@ -17,7 +17,9 @@ typedef struct _timer_task timer_task_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-timer_task_t* timer_task_new(uint32_t ms, Operation_t operation, void* user_data);
+timer_task_t* timer_task_new(uint32_t       ms,
+                             operation_cb_t operation,
+                             void*          user_data);
 void          timer_task_del(timer_task_t*);
 
 void     timer_flush();

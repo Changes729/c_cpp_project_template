@@ -56,7 +56,6 @@ void sets_remove(sets_t* set, void* data)
   CompareCallback_t cb     = (set->cb_cmp == NULL ? _point_cmp : set->cb_cmp);
   list_t*           remove = NULL;
 
-  list_t* node;
   list_foreach(node, &set->list_head)
   {
     if(cb(data, node->data) == 0) {
@@ -66,7 +65,7 @@ void sets_remove(sets_t* set, void* data)
   }
 
   if(remove != NULL) {
-    set->cb_cleanup(list_node_remove(node));
+    set->cb_cleanup(list_node_remove(remove));
     set->count--;
   }
 }

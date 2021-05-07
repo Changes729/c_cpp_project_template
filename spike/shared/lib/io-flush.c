@@ -39,9 +39,9 @@ static int            _epoll_fd = -1;
 
 /* Private function prototypes -----------------------------------------------*/
 static struct timeval _translate_ms(uint32_t ms);
-static void        _io_list_after_loop();
-static inline void _io_list_mark_remove(io_node_t*);
-static inline void _io_list_remove_node(list_t*);
+static void           _io_list_after_loop();
+static inline void    _io_list_mark_remove(io_node_t*);
+static inline void    _io_list_remove_node(list_t*);
 
 /* Private function ----------------------------------------------------------*/
 bool io_epoll_fd_init()
@@ -228,7 +228,7 @@ static void _io_list_after_loop()
   {
     node = list_node->data;
     if(remove) {
-      _io_list_remove_node(list_get_next(&io_list_head.head, list_node));
+      _io_list_remove_node(list_get_prev(&io_list_head.head, list_node));
     }
 
     remove = node->remove;

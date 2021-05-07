@@ -13,8 +13,8 @@ extern "C" {
 /* Public typedef ------------------------------------------------------------*/
 typedef struct _task
 {
-  void*       data;
-  Operation_t operation;
+  void*          data;
+  operation_cb_t operation;
 } task_t;
 
 /* Public template -----------------------------------------------------------*/
