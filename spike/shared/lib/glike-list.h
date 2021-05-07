@@ -95,9 +95,18 @@ bool is_list_empty(const list_head_t *list);
   for(list_t *val = list_get_next(list, NULL); val != NULL;                    \
       val         = list_get_next(list, val))
 
+#define list_foreach_r(val, list)                                              \
+  for(list_t *val = list_get_prev(list, NULL); val != NULL;                    \
+      val         = list_get_prev(list, val))
+
 #define list_foreach_data(_val, list)                                          \
   for(list_t *val = list_get_next(list, NULL); val != NULL;                    \
       val         = list_get_next(list, val))                                  \
+    for((_val) = val->data; (_val) != NULL; (_val) = NULL)
+
+#define list_foreach_data_r(_val, list)                                        \
+  for(list_t *val = list_get_prev(list, NULL); val != NULL;                    \
+      val         = list_get_prev(list, val))                                  \
     for((_val) = val->data; (_val) != NULL; (_val) = NULL)
 
 #define list_add_data_head(list_head, data) list_append(list_head, data, NULL)

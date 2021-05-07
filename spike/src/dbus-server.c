@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/poll.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "dbus_define.h"
@@ -9,11 +10,29 @@
 #include "dbus_helper.h"
 #include "dbus_object.h"
 #include "io-flush.h"
+#include "timer-task.h"
 
 static void dbus_main_loop(DBusConnection *dbus_address);
 static void sigint_handler(int param);
+void        dbus_dispatch_status(DBusConnection *   connection,
+                                 DBusDispatchStatus new_status,
+                                 void *             data);
 
 static DBusConnection *dbus_address;
+
+void print_time(void *NO_USE)
+{
+  time_t     timer   = time(NULL);
+  struct tm *tm_info = localtime(&timer);
+  size_t size = strftime(NULL, INTMAX_MAX, "%Y-%m-%d %H:%M:%S", tm_info) + 1;
+  char   buffer[size];
+
+  strftime(buffer, size, "%Y-%m-%d %H:%M:%S", tm_info);
+  printf("\r%s", buffer);
+  fflush(stdout);
+
+  timer_task_new(1000, print_time, NULL);
+}
 
 int main(int agrc, char *argv[])
 {
@@ -53,7 +72,14 @@ int main(int agrc, char *argv[])
     goto __failed;
   }
 
+  dbus_connection_set_dispatch_status_function(dbus_address,
+                                               dbus_dispatch_status,
+                                               NULL,
+                                               NULL);
+
   register_dbus_object_path(dbus_address);
+
+  timer_task_new(1000, print_time, NULL);
 
   dbus_main_loop(dbus_address);
 
@@ -66,10 +92,9 @@ __failed:
 static void dbus_main_loop(DBusConnection *dbus_address)
 {
   while(TRUE) {
-    io_flush_select();
+    io_flush_select(timer_next_alarm());
 
-    while(dbus_connection_dispatch(dbus_address) == DBUS_DISPATCH_DATA_REMAINS) {
-    }
+    timer_flush();
   }
 }
 
@@ -78,4 +103,21 @@ static void sigint_handler(int param)
   unregister_dbus_object_path(dbus_address);
 
   exit(0);
+}
+
+void dbus_dispatch_status(DBusConnection *   connection,
+                          DBusDispatchStatus new_status,
+                          void *             data)
+{
+  switch(new_status) {
+    case DBUS_DISPATCH_DATA_REMAINS:
+      while(dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS)
+        ;
+      break;
+    case DBUS_DISPATCH_COMPLETE:
+      break;
+    case DBUS_DISPATCH_NEED_MEMORY:
+    default:
+      break;
+  }
 }
