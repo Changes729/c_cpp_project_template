@@ -92,7 +92,6 @@ void generate_introspection_xml(DBusConnection *    conn,
                                 struct dbus_object *data,
                                 const char *        path)
 {
-  struct list *  list;
   struct string *gstr;
   char **        children __attribute__((unused));
 
