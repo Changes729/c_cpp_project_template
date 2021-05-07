@@ -11,19 +11,21 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
+typedef operation_cb_t cleanup_cb_t;
+
 typedef struct _set_list
 {
   list_head_t list_head;
 
   unsigned          count;
   CompareCallback_t cb_cmp;
-  DestroyCallback_t cb_destory;
+  cleanup_cb_t      cb_cleanup;
 } sets_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-sets_t* sets_alloc(CompareCallback_t cmp, DestroyCallback_t destroy);
-sets_t* sets_init(sets_t* set, CompareCallback_t, DestroyCallback_t);
+sets_t* sets_alloc(CompareCallback_t cmp, cleanup_cb_t cleanup);
+sets_t* sets_init(sets_t* set, CompareCallback_t, cleanup_cb_t);
 void    sets_free(sets_t*);
 
 sets_t* sets_add(sets_t* set, void* data);

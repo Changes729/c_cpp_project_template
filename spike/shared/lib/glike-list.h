@@ -5,7 +5,7 @@
 /* Public include ------------------------------------------------------------*/
 #include <stdlib.h>
 
-#include "list.h"
+#include "list-define.h"
 #include "typedef.h"
 
 /* Public namespace ----------------------------------------------------------*/
@@ -23,34 +23,87 @@ typedef list_t list_head_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-#define list_alloc(data) list_init(malloc(sizeof(list_t)), data)
-#define list_foreach(node, list)                                               \
-  if(!is_list_empty(list)) list_for_each_entry(node, &(list)->head, head)
+/** Init -----------------------------------------------------------*/
 
-inline static bool is_list_empty(const list_head_t *list_head)
-{
-  return (list_head == NULL) || list_empty(&list_head->head) ||
-         (list_head->head.prev == NULL && list_head->head.next == NULL);
-}
+/**
+ * always be success. the retval is the input list-head. if list is NULL, nothing todo.
+ */
+list_head_t *list_init(list_head_t *list, void *data);
 
-inline static void list_free(list_t *list)
-{
-  free(list);
-}
+/**
+ * if retval not NULL, means success.
+ */
+list_head_t *list_alloc(void *data);
 
-list_t *list_init(list_t *list, void *data);
+/**
+ * always be success. if list is NULL, nothing todo.
+ */
+void list_free(list_head_t *list);
 
-list_head_t *list_append_node(list_head_t *list_head, list_t *node);
-list_head_t *list_prepend_node(list_head_t *list_head, list_t *node);
+/** Add ------------------------------------------------------------*/
+/**
+ * @note DEBUG will assert the input list_head NOT NULL.
+ *             and the relative should be IN LIST.
+ *
+ * @param relative if relative is NULL, new node will be added at tail.
+ *
+ * @retval if not NULL, means success.
+ */
+list_t *list_append(list_head_t *list_head, void *data, list_t *relative);
 
-list_head_t *list_append(list_head_t *list_head, void *data);
-list_head_t *list_prepend(list_head_t *list_head, void *data);
+/**
+ * @note DEBUG will assert the input list_head NOT NULL.
+ *             and the relative should be IN LIST.
+ *
+ * @param relative if relative is NULL, new node will be added at ahead.
+ *
+ * @retval if not NULL, means success.
+ */
+list_t *list_prepend(list_head_t *list_head, void *data, list_t *relative);
 
-list_t *list_get_first(list_head_t *list_head);
-list_t *list_get_last(list_head_t *list_head);
+/** Del ------------------------------------------------------------*/
+/**
+ * remove one node from list. retval is the data.
+ */
+void *list_node_remove(list_t *node);
 
-list_t *list_node_remove(list_t *node);
-void    list_node_free_full(list_t *node, DestroyCallback_t free_func);
+/** Update ---------------------------------------------------------*/
+/** Search ---------------------------------------------------------*/
+/**
+ * @param relative if NULL, relative will be the list_head.
+ *
+ * @retval return the next node after the relative. this may be a NULL.
+ */
+list_t *list_get_next(const list_head_t *list_head, const list_t *relative);
+
+/**
+ * @param relative if NULL, relative will be the list_head.
+ *
+ * @retval return the previous node before the relative. this may be a NULL.
+ */
+list_t *list_get_prev(const list_head_t *list_head, const list_t *relative);
+
+/**
+ * retval is the first node what U want. this may be a NULL.
+ */
+list_t *list_find(const list_head_t *list, const compare_cb_t find, const void *by);
+
+/** Helper ---------------------------------------------------------*/
+bool is_list_empty(const list_head_t *list);
+
+#define list_foreach(val, list)                                                \
+  for(list_t *val = list_get_next(list, NULL); val != NULL;                    \
+      val         = list_get_next(list, val))
+
+#define list_foreach_data(_val, list)                                          \
+  for(list_t *val = list_get_next(list, NULL); val != NULL;                    \
+      val         = list_get_next(list, val))                                  \
+    for((_val) = val->data; (_val) != NULL; (_val) = NULL)
+
+#define list_add_data_head(list_head, data) list_append(list_head, data, NULL)
+#define list_add_data_tail(list_head, data) list_prepend(list_head, data, NULL)
+#define list_get_first(list_head)           list_get_next(list_head, NULL)
+#define list_get_last(list_head)            list_get_prev(list_head, NULL)
 
 #ifdef __cplusplus
 }

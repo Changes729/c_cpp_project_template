@@ -1,4 +1,3 @@
-include_directories(../3rdparty/linux-list/include)
 include_directories(.)
 include_directories(include)
 include_directories(shared)
