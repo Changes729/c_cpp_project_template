@@ -96,7 +96,7 @@ uint32_t timer_next_alarm()
   list_foreach_data(task, &_timer_tasks)
   {
     double time = _cmp_timespec(&task->tend, &tnow);
-    ms          = (time < 0) ? 0 : ((uint32_t)(time) + 1);
+    ms          = (time < 0) ? 0 : (uint32_t)(time) + 1;
     break;
   }
 
