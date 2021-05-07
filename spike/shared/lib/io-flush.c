@@ -8,34 +8,39 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include "list.h"
+#include "glike-list.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#define POSSESSING__ON(io_list_head) (io_list_head).possessing = true
+#define POSSESSING_OFF(io_list_head) (io_list_head).possessing = false
+#define IS_POSSESSING(io_list_head)  (io_list_head).possessing == true
+
 /* Private typedef -----------------------------------------------------------*/
 typedef struct __io_list_head
 {
-  struct list_head head;
-  size_t           count;
+  list_head_t head;
+  size_t      count;
+  bool        possessing;
 } io_list_head_t;
 
 typedef struct
 {
-  struct list_head node;
-  fd_desc_t        pkg;
-  fd_callback_t    callback;
-  void*            user_data;
-  bool             ignore;
+  fd_desc_t     pkg;
+  fd_callback_t callback;
+  void*         user_data;
+  bool          remove;
 } io_node_t;
 
 /* Private template ----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static io_list_head_t io_list_head = {
-    .head = {&io_list_head.head, &io_list_head.head}};
-static int _epoll_fd = -1;
+static io_list_head_t io_list_head;
+static int            _epoll_fd = -1;
 
 /* Private function prototypes -----------------------------------------------*/
-static void remove_node(io_node_t* node, bool later);
+static void        _io_list_after_loop();
+static inline void _io_list_mark_remove(io_node_t*);
+static inline void _io_list_remove_node(list_t*);
 
 /* Private function ----------------------------------------------------------*/
 bool io_epoll_fd_init()
@@ -66,7 +71,7 @@ void io_flush_select(/*timeout*/)
 
   // set fds.
   io_node_t* node;
-  list_for_each_entry(node, &io_list_head.head, node)
+  list_foreach_data(node, &io_list_head.head)
   {
     if(node->pkg.flag & IO_NOTICE_READ) {
       FD_SET(node->pkg.fd, &descriptors_read);
@@ -93,24 +98,20 @@ void io_flush_select(/*timeout*/)
          NULL);
 
   // map fds.
-  list_for_each_entry(node, &io_list_head.head, node)
+  POSSESSING__ON(io_list_head);
+  list_foreach_data(node, &io_list_head.head)
   {
     fd_desc_t desc = {node->pkg.fd, 0};
-    if(node->ignore) continue;
+    if(node->remove) continue;
     if(FD_ISSET(node->pkg.fd, &descriptors_read)) desc.flag |= IO_NOTICE_READ;
     if(FD_ISSET(node->pkg.fd, &descriptors_write)) desc.flag |= IO_NOTICE_WRITE;
     if(FD_ISSET(node->pkg.fd, &descriptors_error)) desc.flag |= IO_NOTICE_ERR;
 
     node->callback(node->user_data, desc);
   }
+  POSSESSING_OFF(io_list_head);
 
-  io_node_t* remove;
-  list_for_each_entry_safe(remove, node, &io_list_head.head, node)
-  {
-    if(remove->ignore) {
-      remove_node(remove, false);
-    }
-  }
+  _io_list_after_loop();
 }
 
 void io_flush_poll(/*timeout*/)
@@ -121,7 +122,7 @@ void io_flush_poll(/*timeout*/)
 
   // set fds.
   io_node_t* node;
-  list_for_each_entry(node, &io_list_head.head, node)
+  list_foreach_data(node, &io_list_head.head)
   {
     if(node->pkg.flag & IO_NOTICE_READ) cond |= POLLIN;
     if(node->pkg.flag & IO_NOTICE_WRITE) cond |= POLLOUT;
@@ -135,11 +136,12 @@ void io_flush_poll(/*timeout*/)
 
   // map fds.
   index = 0;
-  list_for_each_entry(node, &io_list_head.head, node)
+  POSSESSING__ON(io_list_head);
+  list_foreach_data(node, &io_list_head.head)
   {
     short flags   = 0;
     short revents = fds[index++].revents;
-    if(!node->ignore && revents != 0) {
+    if(!node->remove && revents != 0) {
       if(revents & POLLIN) flags |= IO_NOTICE_READ;
       if(revents & POLLOUT) flags |= IO_NOTICE_WRITE;
       if(revents & POLLERR) flags |= IO_NOTICE_ERR;
@@ -148,14 +150,9 @@ void io_flush_poll(/*timeout*/)
       node->callback(node->user_data, (fd_desc_t){node->pkg.fd, flags});
     }
   }
+  POSSESSING_OFF(io_list_head);
 
-  io_node_t* remove;
-  list_for_each_entry_safe(remove, node, &io_list_head.head, node)
-  {
-    if(remove->ignore) {
-      remove_node(remove, false);
-    }
-  }
+  _io_list_after_loop();
 }
 
 void io_flush_epoll(/*timeout*/)
@@ -163,12 +160,13 @@ void io_flush_epoll(/*timeout*/)
   struct epoll_event evs[io_list_head.count];
   int                nfds = epoll_wait(_epoll_fd, evs, io_list_head.count, -1);
 
+  POSSESSING__ON(io_list_head);
   for(size_t i = 0; i < nfds; ++i) {
     io_node_t* node    = evs[i].data.ptr;
     short      flags   = 0;
     uint32_t   revents = evs[i].events;
 
-    if(!node->ignore && revents != 0) {
+    if(!node->remove && revents != 0) {
       if(revents & POLLIN) flags |= IO_NOTICE_READ;
       if(revents & POLLOUT) flags |= IO_NOTICE_WRITE;
       if(revents & POLLERR) flags |= IO_NOTICE_ERR;
@@ -177,14 +175,9 @@ void io_flush_epoll(/*timeout*/)
       node->callback(node->user_data, (fd_desc_t){node->pkg.fd, flags});
     }
   }
+  POSSESSING_OFF(io_list_head);
 
-  io_node_t *node, *remove;
-  list_for_each_entry_safe(remove, node, &io_list_head.head, node)
-  {
-    if(remove->ignore) {
-      remove_node(remove, false);
-    }
-  }
+  _io_list_after_loop();
 }
 
 bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
@@ -195,9 +188,9 @@ bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
   node->pkg       = pkg;
   node->callback  = callback;
   node->user_data = user_data;
-  node->ignore    = false;
-  list_add_tail(&node->node, &io_list_head.head);
-  io_list_head.count++;
+  node->remove    = false;
+
+  if(list_add_data_tail(&io_list_head.head, node) != NULL) io_list_head.count++;
 
   if(_epoll_fd != -1) {
     uint32_t cond = 0;
@@ -214,26 +207,42 @@ bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
 void io_ignore_file(int fd)
 {
   io_node_t* node;
-  list_for_each_entry(node, &io_list_head.head, node)
+  list_foreach(list_node, &io_list_head.head)
   {
+    node = list_node->data;
     if(node->pkg.fd == fd) {
-      remove_node(node, true);
+      IS_POSSESSING(io_list_head) ? _io_list_mark_remove(node)
+                                  : _io_list_remove_node(list_node);
       break;
     }
   }
 }
 
-static void remove_node(io_node_t* node, bool later)
+static void _io_list_after_loop()
 {
-  if(later) {
-    node->ignore = true;
-  } else {
-    if(_epoll_fd != -1) {
-      epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, node->pkg.fd, NULL);
+  io_node_t* node;
+  bool       remove = false;
+  list_foreach(list_node, &io_list_head.head)
+  {
+    node = list_node->data;
+    if(remove) {
+      _io_list_remove_node(list_get_next(&io_list_head.head, list_node));
     }
 
-    list_del(&node->node);
-    free(node);
-    io_list_head.count--;
+    remove = node->remove;
   }
+
+  if(remove) {
+    _io_list_remove_node(list_get_last(&io_list_head.head));
+  }
+}
+
+static inline void _io_list_mark_remove(io_node_t* node)
+{
+  node->remove = true;
+}
+
+static inline void _io_list_remove_node(list_t* list_node)
+{
+  free(list_node_remove(list_node));
 }
