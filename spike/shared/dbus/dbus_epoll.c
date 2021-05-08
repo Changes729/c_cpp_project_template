@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dbus_task.h"
 #include "io-flush.h"
 
 /* Private define ------------------------------------------------------------*/
@@ -14,8 +15,9 @@
 /* Private function ----------------------------------------------------------*/
 void on_dbus_watch(void *user_data, fd_desc_t pkg)
 {
-  DBusWatch *  watch = user_data;
-  unsigned int flags = 0;
+  DBusWatch *     watch                              = user_data;
+  DBusConnection *connection __attribute__((unused)) = dbus_watch_get_data(watch);
+  unsigned int    flags                              = 0;
 
   if(pkg.flag & IO_NOTICE_READ) flags |= DBUS_WATCH_READABLE;
   if(pkg.flag & IO_NOTICE_WRITE) flags |= DBUS_WATCH_WRITABLE;
@@ -26,6 +28,8 @@ void on_dbus_watch(void *user_data, fd_desc_t pkg)
     printf("dbus_watch_handle needs more memory\n");
     break;
   }
+
+  queue_dispatch(connection);
 }
 
 dbus_bool_t _add_watch(DBusWatch *watch, void *data)
@@ -36,6 +40,7 @@ dbus_bool_t _add_watch(DBusWatch *watch, void *data)
   if(flags & DBUS_WATCH_READABLE) desc.flag |= IO_NOTICE_READ;
   if(flags & DBUS_WATCH_WRITABLE) desc.flag |= IO_NOTICE_WRITE;
 
+  dbus_watch_set_data(watch, data, NULL);
   io_notice_file(desc, on_dbus_watch, watch);
 
   return 1;
@@ -43,6 +48,7 @@ dbus_bool_t _add_watch(DBusWatch *watch, void *data)
 
 void _remove_watch(DBusWatch *watch, void *data)
 {
+  dbus_watch_set_data(watch, NULL, NULL);
   io_ignore_file(dbus_watch_get_unix_fd(watch));
 }
 

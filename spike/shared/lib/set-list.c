@@ -32,7 +32,7 @@ sets_t* sets_init(sets_t* set, CompareCallback_t cmp, cleanup_cb_t cleanup)
   list_init(&set->list_head, set);
   set->count      = 0;
   set->cb_cmp     = cmp;
-  set->cb_cleanup = (cleanup == NULL ? _cleanup_empty : cleanup);
+  set->cb_cleanup = cleanup;
 
   return set;
 }
@@ -53,8 +53,10 @@ sets_t* sets_add(sets_t* set, void* data)
 
 void sets_remove(sets_t* set, void* data)
 {
-  CompareCallback_t cb     = (set->cb_cmp == NULL ? _point_cmp : set->cb_cmp);
   list_t*           remove = NULL;
+  CompareCallback_t cb     = (set->cb_cmp == NULL ? _point_cmp : set->cb_cmp);
+  cleanup_cb_t      cleanup =
+      (set->cb_cleanup == NULL ? _cleanup_empty : set->cb_cleanup);
 
   list_foreach(node, &set->list_head)
   {
@@ -65,7 +67,7 @@ void sets_remove(sets_t* set, void* data)
   }
 
   if(remove != NULL) {
-    set->cb_cleanup(list_node_remove(remove));
+    cleanup(list_node_remove(remove));
     set->count--;
   }
 }
@@ -73,8 +75,12 @@ void sets_remove(sets_t* set, void* data)
 void sets_cleanup(sets_t* set)
 {
   list_t* node = NULL;
+
+  cleanup_cb_t cleanup =
+      (set->cb_cleanup == NULL ? _cleanup_empty : set->cb_cleanup);
+
   while(NULL != (node = list_get_first(&set->list_head))) {
-    set->cb_cleanup(list_node_remove(node));
+    cleanup(list_node_remove(node));
     set->count--;
   }
 }

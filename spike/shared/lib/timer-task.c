@@ -64,7 +64,9 @@ timer_task_t* timer_task_new(uint32_t ms, operation_cb_t operation, void* user_d
 
 void timer_task_del(timer_task_t* task)
 {
-  task->remove = true;
+  if(task != NULL) {
+    task->remove = true;
+  }
 }
 
 void timer_flush()
@@ -131,11 +133,11 @@ static void _timer_after_loop()
   bool                remove = false;
   list_foreach(list_node, &_timer_tasks)
   {
-    task = list_node->data;
     if(remove) {
       free(list_node_remove(list_get_prev(&_timer_tasks, list_node)));
     }
 
+    task   = list_node->data;
     remove = task->remove;
   }
 

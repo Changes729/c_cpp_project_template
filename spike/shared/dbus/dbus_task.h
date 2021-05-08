@@ -1,9 +1,12 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_XML_H
-#define _DBUS_XML_H
+#ifndef _DBUS_TASK_H
+#define _DBUS_TASK_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_helper.h"
+#include <dbus/dbus.h>
+
+#include "dbus_object_helper.h"
+#include "timer-task.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -11,18 +14,14 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef struct dbus_object    dbus_object_t;
-typedef struct interface_data interface_data_t;
-
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
+void queue_dispatch(DBusConnection *connection);
+void queue_pading(dbus_object_t *data);
 
-dbus_object_t* attach_dbus_object(DBusConnection* conn, const char* path);
-void           detach_dbus_object(DBusConnection* conn, const char* path);
+void process_changes(void *user_data);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_XML_H */
+#endif /* _DBUS_TASK_H */

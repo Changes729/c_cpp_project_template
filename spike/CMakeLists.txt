@@ -3,6 +3,7 @@ include_directories(include)
 include_directories(shared)
 include_directories(shared/lib)
 include_directories(shared/dbus)
+include_directories(shared/dbus/interface)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
@@ -27,8 +28,15 @@ link_directories(${GIO_LIBRARY_DIRS})
 
 file(GLOB EXAMPLES_C "src/*.c")
 file(GLOB SHARED_C "shared/*.c")
-file(GLOB LIB_DBUS_HELPER_SRC "shared/dbus/*.c")
 file(GLOB LIB_SRC "shared/lib/*.c")
+
+file(GLOB LIB_DBUS_HELPER_SRC
+		"shared/dbus/*.c"
+		"shared/dbus/interface/*.c"
+		"shared/dbus/interface/introspectable/*.c"
+		"shared/dbus/interface/object_manager/*.c"
+		"shared/dbus/interface/properties/*.c"
+	)
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h

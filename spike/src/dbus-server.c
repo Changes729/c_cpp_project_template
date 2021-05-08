@@ -9,6 +9,8 @@
 #include "dbus_epoll.h"
 #include "dbus_helper.h"
 #include "dbus_object.h"
+#include "dbus_task.h"
+#include "dbus_timer.h"
 #include "io-flush.h"
 #include "timer-task.h"
 
@@ -61,19 +63,29 @@ int main(int agrc, char *argv[])
     goto __failed;
   }
 
+  queue_dispatch(dbus_address);
+
   if(!dbus_connection_set_watch_functions(dbus_address,
                                           _add_watch,
                                           _remove_watch,
                                           NULL,
-                                          NULL,
+                                          dbus_address,
                                           NULL))
   {
     fprintf(stderr, "dbus_connection_set_watch_functions failed\n");
     goto __failed;
   }
 
-  // todo:
-  // dbus_connection_set_timeout_functions(dbus_address, )
+  if(!dbus_connection_set_timeout_functions(dbus_address,
+                                            add_timeout,
+                                            remove_timeout,
+                                            toggle_timeout,
+                                            NULL,
+                                            NULL))
+  {
+    fprintf(stderr, "dbus_connection_set_timeout_functions() failed\n");
+    goto __failed;
+  }
 
   dbus_connection_set_dispatch_status_function(dbus_address,
                                                dbus_dispatch_status,
@@ -97,8 +109,6 @@ static void dbus_main_loop(DBusConnection *dbus_address)
   while(TRUE) {
     io_flush_select(timer_next_alarm() >> 1);
 
-    while(dbus_connection_dispatch(dbus_address) == DBUS_DISPATCH_DATA_REMAINS)
-      ;
     timer_flush();
   }
 }
@@ -116,8 +126,7 @@ void dbus_dispatch_status(DBusConnection *   connection,
 {
   switch(new_status) {
     case DBUS_DISPATCH_DATA_REMAINS:
-      while(dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS)
-        ;
+      queue_dispatch(dbus_address);
       break;
     case DBUS_DISPATCH_COMPLETE:
       break;

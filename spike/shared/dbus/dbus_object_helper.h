@@ -13,18 +13,7 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-struct interface_data
-{
-  char *                   name;
-  const DBusMethodTable *  methods;
-  const DBusSignalTable *  signals;
-  const DBusPropertyTable *properties;
-  sets_t                   pending_prop;
-  void *                   user_data;
-  DBusDestroyFunction      destroy;
-};
-
-struct dbus_object
+typedef struct dbus_object
 {
   DBusConnection *    conn;
   char *              path;
@@ -35,18 +24,11 @@ struct dbus_object
   sets_t              objects;
   struct dbus_object *parent;
   bool                pending_prop;
-};
+} dbus_object_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void generate_introspection_xml(DBusConnection *    conn,
-                                struct dbus_object *data,
-                                const char *        path);
-
 void interface_sets_init(sets_t *sets);
-bool find_interface_by_name(struct dbus_object *    dbus_object,
-                            const char *            name,
-                            struct interface_data **interface);
 
 #ifdef __cplusplus
 }

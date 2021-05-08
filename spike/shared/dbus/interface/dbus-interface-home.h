@@ -1,9 +1,9 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_XML_H
-#define _DBUS_XML_H
+#ifndef _DBUS_INTERFACE_HOME_H
+#define _DBUS_INTERFACE_HOME_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_helper.h"
+#include "dbus_object.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -11,18 +11,19 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef struct dbus_object    dbus_object_t;
-typedef struct interface_data interface_data_t;
+typedef uintptr_t dbus_interface_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
+bool attach_interface(struct dbus_object*, const char* interface_name);
+void detach_interface(struct dbus_object*, const char* interface_name);
 
-dbus_object_t* attach_dbus_object(DBusConnection* conn, const char* path);
-void           detach_dbus_object(DBusConnection* conn, const char* path);
+bool find_interface_method(struct dbus_object* dbus_object,
+                           const char*         iface_name,
+                           const char*         method_name,
+                           DBusMethodFunction* method);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_XML_H */
+#endif /* _DBUS_INTERFACE_HOME_H */
