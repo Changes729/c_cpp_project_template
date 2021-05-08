@@ -17,6 +17,10 @@ extern "C" {
 interface_data_t* properties_regist(dbus_object_t* data);
 void              properties_unregist(dbus_object_t* data);
 
+void append_property(struct interface_data*   iface,
+                     const DBusPropertyTable* p,
+                     DBusMessageIter*         dict);
+
 #ifdef __cplusplus
 }
 #endif

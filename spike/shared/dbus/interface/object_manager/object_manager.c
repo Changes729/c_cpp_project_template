@@ -4,6 +4,7 @@
 #include "dbus-interface-home.h"
 #include "dbus-interface-inner.h"
 #include "dbus_define.h"
+#include "properties/properties.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -18,9 +19,6 @@ static void append_interfaces(struct dbus_object *data, DBusMessageIter *iter);
 static int  append_interface(void *data, void *user_data);
 static void append_properties(struct interface_data *data, DBusMessageIter *iter);
 static bool check_experimental(int flags, int flag);
-static void append_property(struct interface_data *  iface,
-                            const DBusPropertyTable *p,
-                            DBusMessageIter *        dict);
 static int  append_name(void *data, void *user_data);
 
 /* Private variables ---------------------------------------------------------*/
@@ -252,22 +250,6 @@ static bool check_experimental(int flags, int flag)
   if(!(flags & flag)) return FALSE;
 
   return !(global_flags & G_DBUS_FLAG_ENABLE_EXPERIMENTAL);
-}
-
-static void append_property(struct interface_data *  iface,
-                            const DBusPropertyTable *p,
-                            DBusMessageIter *        dict)
-{
-  DBusMessageIter entry, value;
-
-  dbus_message_iter_open_container(dict, DBUS_TYPE_DICT_ENTRY, NULL, &entry);
-  dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING, &p->name);
-  dbus_message_iter_open_container(&entry, DBUS_TYPE_VARIANT, p->type, &value);
-
-  p->get(p, &value, iface->user_data);
-
-  dbus_message_iter_close_container(&entry, &value);
-  dbus_message_iter_close_container(dict, &entry);
 }
 
 static int append_name(void *data, void *user_data)

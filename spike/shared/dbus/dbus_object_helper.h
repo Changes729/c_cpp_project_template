@@ -26,6 +26,13 @@ typedef struct dbus_object
   bool                pending_prop;
 } dbus_object_t;
 
+struct property_data
+{
+  DBusConnection *       conn;
+  DBusPendingPropertySet id;
+  DBusMessage *          message;
+};
+
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
 void interface_sets_init(sets_t *sets);
