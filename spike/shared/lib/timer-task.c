@@ -57,13 +57,13 @@ timer_task_t* timer_task_new(uint32_t ms, operation_cb_t operation, void* user_d
     list_foreach_r(list_node, &_timer_tasks.head)
     {
       struct _timer_task* find_task = list_node->data;
-      if(_cmp_timespec(&find_task->tend, &task->tend) > 0) {
+      if(_cmp_timespec(&find_task->tend, &task->tend) <= 0) {
         find = list_node;
         break;
       }
     }
 
-    if(list_prepend(&_timer_tasks.head, task, find) == NULL) {
+    if(list_append(&_timer_tasks.head, task, find) == NULL) {
       free(task);
       task = NULL;
     }
