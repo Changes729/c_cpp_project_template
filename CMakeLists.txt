@@ -46,10 +46,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/linux_pc")
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/linux_pc)
 
 ## support pkg_check_modules
 find_package(PkgConfig REQUIRED)
+
+add_subdirectory(3rdparty/googletest)
 
 # pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 # include_directories(${LIBUSB_INCLUDE_DIRS})
@@ -59,6 +61,8 @@ find_package(PkgConfig REQUIRED)
 add_subdirectory(src)
 
 if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
-  message("build spike subdirectory")
-  add_subdirectory(spike)
+message("build spike subdirectory")
+add_subdirectory(spike)
 endif()
+
+add_subdirectory(test)
