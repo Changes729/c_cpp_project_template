@@ -48,6 +48,7 @@ static struct dbus_object root = {
     .path = "/org/countdown",
 };
 
+// dbus-send --session --dest=org.gnome.ServiceName --type=method_call --print-reply=literal --reply-timeout=1000 /org/countdown org.freedesktop.DBus.Properties.Set string:"org.freedesktop.DBus.Countdown" string:"Count" variant:int32:"10"
 static const DBusPropertyTable countdown_properties[] =
     {{"Count", "i", get_countdown, set_countdown, countdown_exists},
      {"Information", "s", get_information},

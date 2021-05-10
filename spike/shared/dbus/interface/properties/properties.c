@@ -251,6 +251,7 @@ static DBusMessage *properties_set(DBusConnection *connection,
 {
   dbus_object_t *          data = user_data;
   DBusMessageIter          iter, sub;
+  DBusMessage *            reply;
   struct interface_data *  iface;
   const DBusPropertyTable *property;
   const char *             name, *interface;
@@ -324,12 +325,15 @@ static DBusMessage *properties_set(DBusConnection *connection,
                              name);
 
   propdata          = malloc(sizeof(struct property_data));
-  propdata->message = dbus_message_ref(message);
+  propdata->message = message;
   propdata->conn    = connection;
 
   property->set(property, &sub, propdata->id, iface->user_data);
 
-  return NULL;
+  reply = dbus_message_new_method_return(message);
+  if(reply == NULL) return NULL;
+
+  return reply;
 }
 
 void process_property_changes(dbus_object_t *data)
