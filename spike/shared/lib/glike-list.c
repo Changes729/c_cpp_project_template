@@ -115,6 +115,24 @@ list_t *list_get_prev(const list_head_t *list_head, const list_t *relative)
   return prev;
 }
 
+list_t *list_find(const list_head_t *list, const void *find, const compare_cb_t cmp)
+{
+  list_foreach(node, list)
+  {
+    if(cmp == NULL) {
+      if(find == node->data) {
+        return node;
+      }
+    } else {
+      if(cmp(find, node->data) == 0) {
+        return node;
+      }
+    }
+  }
+
+  return NULL;
+}
+
 bool is_list_empty(const list_head_t *list_head)
 {
   return (list_head == NULL) || list_empty(&list_head->head) ||

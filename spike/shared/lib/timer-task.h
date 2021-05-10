@@ -21,8 +21,10 @@ timer_task_t* timer_task_new(uint32_t       ms,
                              operation_cb_t operation,
                              void*          user_data);
 void          timer_task_del(timer_task_t*);
+void          timer_task_continue(timer_task_t*);
+void          timer_flush(timer_task_t*);
 
-void     timer_flush();
+void     timer_run();
 uint32_t timer_next_alarm();
 
 #ifdef __cplusplus

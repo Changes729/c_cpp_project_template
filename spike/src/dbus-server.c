@@ -94,7 +94,7 @@ static void dbus_main_loop(DBusConnection *dbus_address)
   while(TRUE) {
     io_flush_select(timer_next_alarm());
 
-    timer_flush();
+    timer_run();
   }
 }
 

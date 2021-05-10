@@ -86,7 +86,7 @@ list_t *list_get_prev(const list_head_t *list_head, const list_t *relative);
 /**
  * retval is the first node what U want. this may be a NULL.
  */
-list_t *list_find(const list_head_t *list, const compare_cb_t find, const void *by);
+list_t *list_find(const list_head_t *list, const void *find, const compare_cb_t by);
 
 /** Helper ---------------------------------------------------------*/
 bool is_list_empty(const list_head_t *list);
