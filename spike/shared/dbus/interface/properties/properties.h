@@ -33,6 +33,9 @@ void process_property_changes(dbus_object_t* data);
 void process_properties_from_interface(dbus_object_t*         data,
                                        struct interface_data* iface);
 
+#define emit_property_changed(conn, path, interface, name)                     \
+  emit_property_changed_full(conn, path, interface, name, 0)
+
 #ifdef __cplusplus
 }
 #endif

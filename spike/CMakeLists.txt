@@ -5,6 +5,7 @@ include_directories(shared/lib)
 include_directories(shared/dbus)
 include_directories(shared/dbus/initial)
 include_directories(shared/dbus/interface)
+include_directories(shared/dbus/object)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
@@ -38,7 +39,11 @@ file(GLOB LIB_DBUS_HELPER_SRC
 		"shared/dbus/interface/introspectable/*.c"
 		"shared/dbus/interface/object_manager/*.c"
 		"shared/dbus/interface/properties/*.c"
-	)
+		"shared/dbus/object/*.c"
+		"shared/dbus/object/root-object/*.c"
+)
+
+file(GLOB EXAMPLE_DBUS "src/dbus-example/object/*.c")
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h
@@ -60,7 +65,7 @@ set(GLIB_DBUS_BINDING_FILES
 
 # FIXME: ...
 add_library(project_library ${LIB_SRC})
-add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC} ${LIB_SRC})
+add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC} ${LIB_SRC} ${EXAMPLE_DBUS})
 target_link_libraries(lib_dbus_helper ${project_library} ${DBUS_LIBRARIES})
 
 foreach(EXAMPLE_FILE ${EXAMPLES_C})

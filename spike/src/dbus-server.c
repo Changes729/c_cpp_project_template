@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "dbus-example/object/object-countdown.h"
 #include "dbus_define.h"
 #include "dbus_helper.h"
 #include "dbus_initial.h"
@@ -48,13 +49,15 @@ int main(int agrc, char *argv[])
   }
 
   signal(SIGINT, sigint_handler);
-  register_dbus_object_path(connection);
+  register_root_object(connection);
+  register_countdown_object(connection);
 
   timer_task_new(1000, print_time, NULL);
 
   dbus_main_loop(connection);
 
-  unregister_dbus_object_path(connection);
+  unregister_countdown_object(connection);
+  unregister_root_object(connection);
 
 __failed:
   return 0;

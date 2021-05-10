@@ -104,14 +104,12 @@ static void _generate_introspection_xml(DBusConnection *    conn,
     string_append_printf(str, "</interface>");
   }
 
-#if 0
   if(!dbus_connection_list_registered(conn, path, &children)) goto done;
 
   for(size_t i = 0; children[i]; i++)
     string_append_printf(str, "<node name=\"%s\"/>", children[i]);
 
   dbus_free_string_array(children);
-#endif
 
 done:
   string_append_printf(str, "</node>");

@@ -135,10 +135,10 @@ void emit_interfaces_removed(struct dbus_object *data)
 {
   DBusMessage *       signal;
   DBusMessageIter     iter, array;
-  struct dbus_object *root;
-  if(data->parent == NULL) return;
-  while(data->parent != NULL) {
-    root = data->parent;
+  struct dbus_object *root = data->parent;
+  if(root == NULL) return;
+  while(root->parent != NULL) {
+    root = root->parent;
   }
 
   signal = dbus_message_new_signal(root->path,

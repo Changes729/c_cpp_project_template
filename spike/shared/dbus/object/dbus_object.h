@@ -4,6 +4,7 @@
 #pragma once
 /* Public include ------------------------------------------------------------*/
 #include "dbus_helper.h"
+#include "root-object/root-object.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -16,11 +17,6 @@ typedef struct interface_data interface_data_t;
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-void register_dbus_object_path(DBusConnection* conn);
-void unregister_dbus_object_path(DBusConnection* conn);
-
-dbus_object_t* attach_dbus_object(DBusConnection* conn, const char* path);
-void           detach_dbus_object(DBusConnection* conn, const char* path);
 
 #ifdef __cplusplus
 }

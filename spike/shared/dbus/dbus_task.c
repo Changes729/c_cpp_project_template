@@ -2,6 +2,7 @@
 #include "dbus_task.h"
 /* Private include -----------------------------------------------------------*/
 #include "object_manager/object_manager.h"
+#include "properties/properties.h"
 #include "set-list.h"
 
 /* Private namespace ---------------------------------------------------------*/
@@ -51,7 +52,7 @@ void process_changes(void *user_data)
   if(sets_length(&data->added) > 0) emit_interfaces_added(data);
 
   /* Flush pending properties */
-  // if(data->pending_prop == TRUE) process_property_changes(data);
+  if(data->pending_prop == TRUE) process_property_changes(data);
 
   if(sets_length(&data->removed) > 0) emit_interfaces_removed(data);
 

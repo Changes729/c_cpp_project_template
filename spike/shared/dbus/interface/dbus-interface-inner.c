@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "dbus_task.h"
+#include "properties/properties.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -12,10 +13,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-bool find_interface_by_name(struct dbus_object *    dbus_object,
-                            const char *            name,
-                            struct interface_data **interface);
-
 /* Private class function ----------------------------------------------------*/
 interface_data_t *add_interface(dbus_object_t *          data,
                                 const char *             name,
@@ -72,7 +69,7 @@ void remove_interface(dbus_object_t *data, const char *name)
     goto __end;
   }
 
-  // todo: process_properties_from_interface(data, iface);
+  process_properties_from_interface(data, iface);
   sets_remove(&data->interfaces, iface);
 
   if(iface->destroy) {

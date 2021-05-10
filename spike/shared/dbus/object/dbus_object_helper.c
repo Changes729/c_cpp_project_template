@@ -1,72 +1,50 @@
 /** See a brief introduction (right-hand button) */
-#include "dbus_object.h"
-/* Private include -----------------------------------------------------------*/
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "dbus-interface-home.h"
-#include "dbus_define.h"
-#include "dbus_error.h"
 #include "dbus_object_helper.h"
-#include "glike-list.h"
-#include "timer-task.h"
+/* Private include -----------------------------------------------------------*/
+#include "dbus-interface-home.h"
+#include "dbus-interface-inner.h"
+#include "dbus_error.h"
+#include "dbus_task.h"
+#include "string-buffer.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private template ----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static DBusHandlerResult server_message_handler(DBusConnection *,
-                                                DBusMessage *,
-                                                void *user_data);
+static int  _interface_find_by_name(const struct interface_data *a,
+                                    const struct interface_data *b);
+static void _interface_clean_up(struct interface_data *a);
+
+static void generic_unregister(DBusConnection *connection, void *user_data);
+static DBusHandlerResult generic_handler(DBusConnection *,
+                                         DBusMessage *,
+                                         void *user_data);
 
 static struct dbus_object *invalidate_parent_data(DBusConnection *conn,
                                                   const char *    child_path);
 
 /* Private variables ---------------------------------------------------------*/
 static const DBusObjectPathVTable server_vtable = {
-    .message_function = server_message_handler,
+    .unregister_function = generic_unregister,
+    .message_function    = generic_handler,
 };
 
-static struct dbus_object root = {
-    .path = "/",
-};
-
-/* Private class -------------------------------------------------------------*/
 /* Private function ----------------------------------------------------------*/
-void register_dbus_object_path(DBusConnection *conn)
+/**
+ * @brief  ...
+ * @param  None
+ * @retval None
+ */
+void interface_sets_init(sets_t *sets)
 {
-  struct dbus_object *data = attach_dbus_object(conn, root.path);
-  if(data == NULL) return;
-
-  attach_interface(data, DBUS_INTERFACE_INTROSPECTABLE);
-  attach_interface(data, DBUS_INTERFACE_OBJECT_MANAGER);
-  // attach_interface(data, DBUS_INTERFACE_PROPERTIES);
-
-  data = attach_dbus_object(conn, "/org/bluez");
-  attach_interface(data, DBUS_INTERFACE_INTROSPECTABLE);
-  data = attach_dbus_object(conn, "/org/bluez/hci0");
-  attach_interface(data, DBUS_INTERFACE_INTROSPECTABLE);
+  sets_init(sets, (CompareCallback_t)_interface_find_by_name, NULL);
 }
 
-void unregister_dbus_object_path(DBusConnection *conn)
+static int _interface_find_by_name(const struct interface_data *a,
+                                   const struct interface_data *b)
 {
-  dbus_object_t *dbus_object;
-  if(!dbus_connection_get_object_path_data(conn, root.path, (void *)&dbus_object) ||
-     dbus_object == NULL)
-  {
-    return;
-  }
-
-  detach_dbus_object(conn, "/org/bluez/hci0");
-  detach_dbus_object(conn, "/org/bluez");
-
-  detach_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
-  detach_interface(dbus_object, DBUS_INTERFACE_OBJECT_MANAGER);
-  // detach_interface(dbus_object, DBUS_INTERFACE_PROPERTIES);
-  detach_dbus_object(conn, root.path);
+  return strcmp(a->name, b->name);
 }
 
 dbus_object_t *attach_dbus_object(DBusConnection *conn, const char *path)
@@ -102,8 +80,6 @@ dbus_object_t *attach_dbus_object(DBusConnection *conn, const char *path)
   {
     invalidate_parent_data(conn, path);
     if(attach_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE) == TRUE) {
-      // todo: notify InterfacesAdded.
-      // todo: notify PropertiesChanged on idle.
       goto __end;
     }
   }
@@ -126,10 +102,7 @@ void detach_dbus_object(DBusConnection *conn, const char *path)
     goto __end;
   }
 
-  // todo: notify InterfacesRemoved.
-  sets_cleanup(&dbus_object->removed);
   detach_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
-  // todo: notify PropertiesChanged
   invalidate_parent_data(conn, path);
 
   dbus_connection_unregister_object_path(dbus_object->conn, dbus_object->path);
@@ -142,9 +115,26 @@ __end:
   return;
 }
 
-static DBusHandlerResult server_message_handler(DBusConnection *conn,
-                                                DBusMessage *   message,
-                                                void *          data)
+static void generic_unregister(DBusConnection *connection, void *user_data)
+{
+  dbus_object_t *data   = user_data;
+  dbus_object_t *parent = data->parent;
+
+  if(parent != NULL) sets_remove(&parent->objects, data);
+
+  process_changes(data);
+
+  dbus_object_t *node;
+  sets_foreach_data(node, &data->objects)
+  {
+    node->parent = parent;
+  }
+  sets_cleanup(&data->objects);
+}
+
+static DBusHandlerResult generic_handler(DBusConnection *conn,
+                                         DBusMessage *   message,
+                                         void *          data)
 {
   struct dbus_object *dbus_object = data;
 
@@ -152,11 +142,6 @@ static DBusHandlerResult server_message_handler(DBusConnection *conn,
   DBusMessage *      reply    = NULL;
   DBusMethodFunction function = NULL;
   DBusError          err;
-
-  printf("Got D-Bus request: %s.%s on %s\n",
-         dbus_message_get_interface(message),
-         dbus_message_get_member(message),
-         dbus_message_get_path(message));
 
   do {
     if(strcmp(dbus_message_get_path(message), dbus_object->path) != 0) {
@@ -197,13 +182,6 @@ static DBusHandlerResult server_message_handler(DBusConnection *conn,
 
   return result;
 }
-
-struct interface_find_method_by_name_pkg
-{
-  const char *       iface_name;
-  DBusMessage *      message;
-  DBusMethodFunction method;
-};
 
 static struct dbus_object *invalidate_parent_data(DBusConnection *conn,
                                                   const char *    child_path)

@@ -129,7 +129,7 @@ void emit_property_changed_full(DBusConnection *         connection,
      data == NULL)
     return;
 
-  if(!sets_find(&data->interfaces, interface, (void *)&iface)) return;
+  if(!find_interface_by_name(data, interface, (void *)&iface)) return;
 
   /*
    * If ObjectManager is attached, don't emit property changed if
@@ -170,7 +170,7 @@ static DBusMessage *properties_get(DBusConnection *connection,
                             DBUS_TYPE_INVALID))
     return NULL;
 
-  if(!sets_find(&data->interfaces, interface, (void *)&iface)) {
+  if(!find_interface_by_name(data, interface, (void *)&iface)) {
     return dbus_create_error(message,
                              DBUS_ERROR_INVALID_ARGS,
                              "No such interface '%s'",
@@ -228,7 +228,7 @@ static DBusMessage *properties_get_all(DBusConnection *connection,
                             DBUS_TYPE_INVALID))
     return NULL;
 
-  if(!sets_find(&data->interfaces, interface, (void *)&iface)) {
+  if(!find_interface_by_name(data, interface, (void *)&iface)) {
     return dbus_create_error(message,
                              DBUS_ERROR_INVALID_ARGS,
                              "No such interface '%s'",
@@ -289,7 +289,7 @@ static DBusMessage *properties_set(DBusConnection *connection,
 
   dbus_message_iter_recurse(&iter, &sub);
 
-  if(!sets_find(&data->interfaces, interface, (void *)&iface)) {
+  if(!find_interface_by_name(data, interface, (void *)&iface)) {
     return dbus_create_error(message,
                              DBUS_ERROR_INVALID_ARGS,
                              "No such interface '%s'",

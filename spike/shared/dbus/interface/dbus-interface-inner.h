@@ -37,6 +37,9 @@ interface_data_t* add_interface(dbus_object_t*           data,
                                 DBusDestroyFunction      destroy);
 
 void remove_interface(dbus_object_t* data, const char* name);
+bool find_interface_by_name(struct dbus_object*     dbus_object,
+                            const char*             name,
+                            struct interface_data** interface);
 
 #ifdef __cplusplus
 }
