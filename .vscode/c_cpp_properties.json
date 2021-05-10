@@ -8,7 +8,9 @@
                 "/usr/include/dbus-1.0/**",
                 "/usr/lib/dbus-1.0/include", // for `dbus-arch-deps.h`
                 "/usr/include/glib-2.0/**",
-                "/usr/lib/glib-2.0/include"
+                "/usr/lib/glib-2.0/include",
+                "${workspaceFolder}/3rdparty/googletest/googletest/include",
+                "${workspaceFolder}/test"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
