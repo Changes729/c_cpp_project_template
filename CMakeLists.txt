@@ -35,9 +35,9 @@ endif()
 
 ## extra compiler warnings
 if ("${CMAKE_C_COMPILER_ID}" MATCHES ".*Clang.*")
-	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-variable -Wswitch-default -Werror")
+	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-but-set-variable -Wunused-variable -Wswitch-default -Werror")
+	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-but-set-variable ")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
 endif()
