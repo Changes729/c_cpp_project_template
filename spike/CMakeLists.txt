@@ -61,6 +61,7 @@ endforeach(EXAMPLE_FILE)
 
 target_link_libraries(alsa-play asound)
 target_link_libraries(io-flush-main project_library)
+target_link_libraries(example-timer project_library)
 
 target_link_libraries(dbus-epoll ${DBUS_LIBRARIES})
 target_link_libraries(dbus-server ${DBUS_LIBRARIES} lib_dbus_helper)
