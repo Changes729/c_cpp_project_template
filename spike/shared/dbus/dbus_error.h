@@ -7,7 +7,7 @@
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
 
 /* Public define -------------------------------------------------------------*/
@@ -16,6 +16,15 @@ extern "C"{
 /* Public typedef ------------------------------------------------------------*/
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
+DBusMessage *dbus_create_error(DBusMessage *message,
+                               const char * name,
+                               const char * format,
+                               ...) __attribute__((format(printf, 3, 4)));
+
+DBusMessage *dbus_create_error_valist(DBusMessage *message,
+                                      const char * name,
+                                      const char * format,
+                                      va_list      args);
 
 #ifdef __cplusplus
 }

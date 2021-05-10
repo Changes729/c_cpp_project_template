@@ -17,8 +17,6 @@ static DBusMessage *get_objects(DBusConnection *connection,
 static int  append_object(void *data, void *user_data);
 static void append_interfaces(struct dbus_object *data, DBusMessageIter *iter);
 static int  append_interface(void *data, void *user_data);
-static void append_properties(struct interface_data *data, DBusMessageIter *iter);
-static bool check_experimental(int flags, int flag);
 static int  append_name(void *data, void *user_data);
 
 /* Private variables ---------------------------------------------------------*/
@@ -214,42 +212,6 @@ static int append_interface(void *data, void *user_data)
   dbus_message_iter_close_container(array, &entry);
 
   return true;
-}
-
-static void append_properties(struct interface_data *data, DBusMessageIter *iter)
-{
-  DBusMessageIter          dict;
-  const DBusPropertyTable *p;
-
-  // clang-format off
-  dbus_message_iter_open_container(iter, DBUS_TYPE_ARRAY,
-          DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING
-          DBUS_TYPE_STRING_AS_STRING
-          DBUS_TYPE_VARIANT_AS_STRING
-          DBUS_DICT_ENTRY_END_CHAR_AS_STRING,
-          &dict);
-  // clang-format on
-
-  for(p = data->properties; p && p->name; p++) {
-    if(check_experimental(p->flags, G_DBUS_PROPERTY_FLAG_EXPERIMENTAL))
-      continue;
-
-    if(p->get == NULL) continue;
-
-    if(p->exists != NULL && !p->exists(p, data->user_data)) continue;
-
-    append_property(data, p, &dict);
-  }
-
-  dbus_message_iter_close_container(iter, &dict);
-}
-
-static bool check_experimental(int flags, int flag)
-{
-  static int global_flags = 0;
-  if(!(flags & flag)) return FALSE;
-
-  return !(global_flags & G_DBUS_FLAG_ENABLE_EXPERIMENTAL);
 }
 
 static int append_name(void *data, void *user_data)

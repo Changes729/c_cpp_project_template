@@ -4,6 +4,7 @@
 #pragma once
 /* Public include ------------------------------------------------------------*/
 #include "dbus-interface-inner.h"
+#include "dbus_helper.h"
 #include "dbus_object_helper.h"
 
 /* Public namespace ----------------------------------------------------------*/
@@ -17,9 +18,20 @@ extern "C" {
 interface_data_t* properties_regist(dbus_object_t* data);
 void              properties_unregist(dbus_object_t* data);
 
+void append_properties(struct interface_data* data, DBusMessageIter* iter);
 void append_property(struct interface_data*   iface,
                      const DBusPropertyTable* p,
                      DBusMessageIter*         dict);
+
+void emit_property_changed_full(DBusConnection*          connection,
+                                const char*              path,
+                                const char*              interface,
+                                const char*              name,
+                                DBusPropertyChangedFlags flags);
+
+void process_property_changes(dbus_object_t* data);
+void process_properties_from_interface(dbus_object_t*         data,
+                                       struct interface_data* iface);
 
 #ifdef __cplusplus
 }
