@@ -3,6 +3,8 @@
 #define _DBUS_INTERFACE_INNER_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
+#include <dbus/dbus.h>
+
 #include "dbus_helper.h"
 #include "dbus_object_helper.h"
 #include "set-list.h"

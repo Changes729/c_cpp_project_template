@@ -6,21 +6,20 @@
 #include <unistd.h>
 
 #include "dbus_define.h"
-#include "dbus_epoll.h"
 #include "dbus_helper.h"
+#include "dbus_initial.h"
 #include "dbus_object.h"
 #include "dbus_task.h"
-#include "dbus_timer.h"
 #include "io-flush.h"
 #include "timer-task.h"
 
-static void dbus_main_loop(DBusConnection *dbus_address);
+static void dbus_main_loop(DBusConnection *connection);
 static void sigint_handler(int param);
 void        dbus_dispatch_status(DBusConnection *   connection,
                                  DBusDispatchStatus new_status,
                                  void *             data);
 
-static DBusConnection *dbus_address;
+static int main_loop_running = 1;
 
 void print_time(void *NO_USE)
 {
@@ -38,75 +37,32 @@ void print_time(void *NO_USE)
 
 int main(int agrc, char *argv[])
 {
+  DBusConnection *connection;
+
+  if(!dbus_init(DBUS_BUS_SESSION,
+                TEST_DBUS_BUS_NAME,
+                DBUS_NAME_FLAG_REPLACE_EXISTING,
+                &connection))
+  {
+    goto __failed;
+  }
+
   signal(SIGINT, sigint_handler);
-
-  DBusError err;
-
-  dbus_error_init(&err);
-
-  // dbus address
-  dbus_address = dbus_bus_get(DBUS_BUS_SESSION, &err);
-  if(dbus_error_is_set(&err)) {
-    fprintf(stderr, "Connection Error(%s) \n", err.message);
-    dbus_error_free(&err);
-    goto __failed;
-  }
-
-  // bus name
-  dbus_bus_request_name(dbus_address,
-                        TEST_DBUS_BUS_NAME,
-                        DBUS_NAME_FLAG_REPLACE_EXISTING,
-                        &err);
-  if(dbus_error_is_set(&err)) {
-    fprintf(stderr, "Requece name error(%s) \n", err.message);
-    dbus_error_free(&err);
-    goto __failed;
-  }
-
-  queue_dispatch(dbus_address);
-
-  if(!dbus_connection_set_watch_functions(dbus_address,
-                                          _add_watch,
-                                          _remove_watch,
-                                          NULL,
-                                          dbus_address,
-                                          NULL))
-  {
-    fprintf(stderr, "dbus_connection_set_watch_functions failed\n");
-    goto __failed;
-  }
-
-  if(!dbus_connection_set_timeout_functions(dbus_address,
-                                            add_timeout,
-                                            remove_timeout,
-                                            toggle_timeout,
-                                            NULL,
-                                            NULL))
-  {
-    fprintf(stderr, "dbus_connection_set_timeout_functions() failed\n");
-    goto __failed;
-  }
-
-  dbus_connection_set_dispatch_status_function(dbus_address,
-                                               dbus_dispatch_status,
-                                               NULL,
-                                               NULL);
-
-  register_dbus_object_path(dbus_address);
+  register_dbus_object_path(connection);
 
   timer_task_new(1000, print_time, NULL);
 
-  dbus_main_loop(dbus_address);
+  dbus_main_loop(connection);
 
-  unregister_dbus_object_path(dbus_address);
+  unregister_dbus_object_path(connection);
 
 __failed:
   return 0;
 }
 
-static void dbus_main_loop(DBusConnection *dbus_address)
+static void dbus_main_loop(DBusConnection *connection)
 {
-  while(TRUE) {
+  while(main_loop_running) {
     io_flush_select(timer_next_alarm() >> 1);
 
     timer_run();
@@ -115,23 +71,5 @@ static void dbus_main_loop(DBusConnection *dbus_address)
 
 static void sigint_handler(int param)
 {
-  unregister_dbus_object_path(dbus_address);
-
-  exit(0);
-}
-
-void dbus_dispatch_status(DBusConnection *   connection,
-                          DBusDispatchStatus new_status,
-                          void *             data)
-{
-  switch(new_status) {
-    case DBUS_DISPATCH_DATA_REMAINS:
-      queue_dispatch(dbus_address);
-      break;
-    case DBUS_DISPATCH_COMPLETE:
-      break;
-    case DBUS_DISPATCH_NEED_MEMORY:
-    default:
-      break;
-  }
+  main_loop_running = 0;
 }

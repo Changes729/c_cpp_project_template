@@ -3,6 +3,7 @@ include_directories(include)
 include_directories(shared)
 include_directories(shared/lib)
 include_directories(shared/dbus)
+include_directories(shared/dbus/initial)
 include_directories(shared/dbus/interface)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -32,6 +33,7 @@ file(GLOB LIB_SRC "shared/lib/*.c")
 
 file(GLOB LIB_DBUS_HELPER_SRC
 		"shared/dbus/*.c"
+		"shared/dbus/initial/*.c"
 		"shared/dbus/interface/*.c"
 		"shared/dbus/interface/introspectable/*.c"
 		"shared/dbus/interface/object_manager/*.c"
@@ -59,7 +61,7 @@ set(GLIB_DBUS_BINDING_FILES
 # FIXME: ...
 add_library(project_library ${LIB_SRC})
 add_library(lib_dbus_helper ${LIB_DBUS_HELPER_SRC} ${LIB_SRC})
-target_link_libraries(lib_dbus_helper ${project_library})
+target_link_libraries(lib_dbus_helper ${project_library} ${DBUS_LIBRARIES})
 
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)
