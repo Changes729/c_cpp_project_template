@@ -1,8 +1,11 @@
 /** See a brief introduction (right-hand button) */
-#include "dbus-interface-inner.h"
+#include "dbus-interface.h"
 /* Private include -----------------------------------------------------------*/
 #include <string.h>
 
+#include "dbus-interface.h"
+#include "dbus_define.h"
+#include "dbus_object.h"
 #include "dbus_task.h"
 #include "properties/properties.h"
 
@@ -13,7 +16,38 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-/* Private class function ----------------------------------------------------*/
+/* Private function ----------------------------------------------------------*/
+bool find_interface_method(struct dbus_object *dbus_object,
+                           const char *        iface_name,
+                           const char *        method_name,
+                           DBusMethodFunction *method)
+{
+  list_head_t *list_head = sets_get_listhead(&dbus_object->interfaces);
+  bool         find      = false;
+
+  struct interface_data *interface;
+  list_foreach_data(interface, list_head)
+  {
+    if(strcmp(interface->name, iface_name) != 0) {
+      continue;
+    }
+
+    for(const DBusMethodTable *node = interface->methods; NULL != node->name;
+        node++)
+    {
+      if(strcmp(node->name, method_name) == 0) {
+        find = true;
+        if(method != NULL) {
+          *method = node->function;
+        }
+        break;
+      }
+    }
+  }
+
+  return find;
+}
+
 interface_data_t *add_interface(dbus_object_t *          data,
                                 const char *             name,
                                 const DBusMethodTable *  methods,

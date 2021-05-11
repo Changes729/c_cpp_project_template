@@ -1,6 +1,8 @@
 /** See a brief introduction (right-hand button) */
 #include "dbus_initial.h"
 /* Private include -----------------------------------------------------------*/
+#include <dbus/dbus.h>
+
 #include "dbus_task.h"
 
 /* Private namespace ---------------------------------------------------------*/

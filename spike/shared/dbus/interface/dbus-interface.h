@@ -1,12 +1,9 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _DBUS_INTERFACE_INNER_H
-#define _DBUS_INTERFACE_INNER_H
+#ifndef _DBUS_INTERFACE_HOME_H
+#define _DBUS_INTERFACE_HOME_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <dbus/dbus.h>
-
-#include "dbus_helper.h"
-#include "dbus_object_helper.h"
+#include "dbus_object.h"
 #include "set-list.h"
 
 /* Public namespace ----------------------------------------------------------*/
@@ -28,6 +25,11 @@ typedef struct interface_data
 
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
+bool find_interface_method(struct dbus_object* dbus_object,
+                           const char*         iface_name,
+                           const char*         method_name,
+                           DBusMethodFunction* method);
+
 interface_data_t* add_interface(dbus_object_t*           data,
                                 const char*              name,
                                 const DBusMethodTable*   methods,
@@ -44,4 +46,4 @@ bool find_interface_by_name(struct dbus_object*     dbus_object,
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DBUS_INTERFACE_INNER_H */
+#endif /* _DBUS_INTERFACE_HOME_H */

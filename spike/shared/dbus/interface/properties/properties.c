@@ -5,8 +5,7 @@
 #include <dbus_error.h>
 #include <string.h>
 
-#include "dbus-interface-home.h"
-#include "dbus-interface-inner.h"
+#include "dbus-interface.h"
 #include "dbus_task.h"
 
 /* Private namespace ---------------------------------------------------------*/

@@ -5,7 +5,7 @@
 /* Public include ------------------------------------------------------------*/
 #include <dbus/dbus.h>
 
-#include "dbus_object_helper.h"
+#include "dbus_object.h"
 #include "timer-task.h"
 
 /* Public namespace ----------------------------------------------------------*/

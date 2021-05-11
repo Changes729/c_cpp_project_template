@@ -12,6 +12,7 @@
 #include "dbus_object.h"
 #include "dbus_task.h"
 #include "io-flush.h"
+#include "root-object/root-object.h"
 #include "timer-task.h"
 
 static void dbus_main_loop(DBusConnection *connection);

@@ -3,10 +3,11 @@
 /* Private include -----------------------------------------------------------*/
 #include <stdio.h>
 
-#include "dbus-interface-home.h"
-#include "dbus-interface-inner.h"
+#include "dbus-interface.h"
 #include "dbus_define.h"
-#include "dbus_object_helper.h"
+#include "dbus_object.h"
+#include "introspectable/introspectable.h"
+#include "object_manager/object_manager.h"
 #include "properties/properties.h"
 #include "timer-task.h"
 
@@ -62,8 +63,8 @@ int register_countdown_object(DBusConnection *connection)
   struct dbus_object *data = attach_dbus_object(connection, root.path);
   if(data == NULL) return FALSE;
 
-  attach_interface(data, DBUS_INTERFACE_INTROSPECTABLE);
-  attach_interface(data, DBUS_INTERFACE_PROPERTIES);
+  introspectable_regist(data);
+  properties_regist(data);
   countdown_regist(data);
 
   count_down.connection = connection;
@@ -85,8 +86,8 @@ void unregister_countdown_object(DBusConnection *connection)
   }
 
   countdown_unregist(dbus_object);
-  detach_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
-  detach_interface(dbus_object, DBUS_INTERFACE_PROPERTIES);
+  introspectable_unregist(dbus_object);
+  properties_unregist(dbus_object);
   detach_dbus_object(connection, root.path);
 }
 

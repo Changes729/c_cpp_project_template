@@ -1,9 +1,11 @@
 /** See a brief introduction (right-hand button) */
 #include "root-object.h"
 /* Private include -----------------------------------------------------------*/
-#include "dbus-interface-home.h"
 #include "dbus_define.h"
-#include "dbus_object_helper.h"
+#include "dbus_object.h"
+#include "introspectable/introspectable.h"
+#include "object_manager/object_manager.h"
+#include "properties/properties.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -23,8 +25,8 @@ int register_root_object(DBusConnection *connection)
   struct dbus_object *data = attach_dbus_object(connection, root.path);
   if(data == NULL) return FALSE;
 
-  attach_interface(data, DBUS_INTERFACE_INTROSPECTABLE);
-  attach_interface(data, DBUS_INTERFACE_OBJECT_MANAGER);
+  introspectable_regist(data);
+  object_manager_regist(data);
 
   return TRUE;
 }
@@ -40,7 +42,7 @@ void unregister_root_object(DBusConnection *connection)
     return;
   }
 
-  detach_interface(dbus_object, DBUS_INTERFACE_INTROSPECTABLE);
-  detach_interface(dbus_object, DBUS_INTERFACE_OBJECT_MANAGER);
+  introspectable_unregist(dbus_object);
+  object_manager_unregist(dbus_object);
   detach_dbus_object(connection, root.path);
 }

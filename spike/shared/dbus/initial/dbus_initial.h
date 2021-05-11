@@ -3,7 +3,7 @@
 #define _DBUS_INITIAL_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <dbus/dbus.h>
+#include <dbus/dbus-shared.h>
 #include <stdbool.h>
 
 /* Public namespace ----------------------------------------------------------*/
@@ -13,6 +13,8 @@ extern "C" {
 
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
+typedef struct DBusConnection DBusConnection;
+
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
 bool dbus_init(DBusBusType      type,

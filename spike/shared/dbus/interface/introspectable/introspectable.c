@@ -1,8 +1,7 @@
 /** See a brief introduction (right-hand button) */
 #include "introspectable.h"
 /* Private include -----------------------------------------------------------*/
-#include "dbus-interface-home.h"
-#include "dbus-interface-inner.h"
+#include "dbus-interface.h"
 #include "string-buffer.h"
 
 /* Private namespace ---------------------------------------------------------*/
