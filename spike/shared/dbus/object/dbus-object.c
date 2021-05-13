@@ -118,7 +118,7 @@ static void generic_unregister(DBusConnection *connection, void *user_data)
 
   if(parent != NULL) sets_remove(&parent->objects, data);
 
-  process_changes(data);
+  process_pading(data);
 
   dbus_object_t *node;
   sets_foreach_data(node, &data->objects)

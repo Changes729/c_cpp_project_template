@@ -3,10 +3,7 @@
 #define _DBUS_TASK_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include <dbus/dbus.h>
-
-#include "dbus-object.h"
-#include "timer-task.h"
+#include "dbus-inner-def.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -19,7 +16,7 @@ extern "C" {
 void queue_dispatch(DBusConnection *connection);
 void queue_pading(dbus_object_t *data);
 
-void process_changes(void *user_data);
+void process_pading(void *user_data);
 
 #ifdef __cplusplus
 }

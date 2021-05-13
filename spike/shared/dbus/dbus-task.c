@@ -4,6 +4,7 @@
 #include "object-manager/object-manager.h"
 #include "properties/properties.h"
 #include "set-list.h"
+#include "timer-task.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -16,7 +17,7 @@ sets_t               _queue_object_update_tasks;
 /* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 static void message_dispatch(void *data);
-void        process_changes(void *user_data);
+void        process_pading(void *user_data);
 
 /* Private function ----------------------------------------------------------*/
 /* Private class function ----------------------------------------------------*/
@@ -32,7 +33,7 @@ void queue_pading(dbus_object_t *data)
   if(!sets_find(&_queue_object_update_tasks, data, NULL)) {
     sets_add(&_queue_object_update_tasks, data);
     // ! task should run before dbus_object destroy.
-    timer_task_new(0, process_changes, data);
+    timer_task_new(0, process_pading, data);
   }
 }
 
@@ -45,7 +46,7 @@ static void message_dispatch(void *data)
   _queue_dispatch_task = NULL;
 }
 
-void process_changes(void *user_data)
+void process_pading(void *user_data)
 {
   struct dbus_object *data = user_data;
 
