@@ -20,7 +20,7 @@ void        dbus_dispatch_status(DBusConnection *   connection,
 
 static int main_loop_running = 1;
 
-void print_time(void *NO_USE)
+void print_time(void *task)
 {
   time_t     timer   = time(NULL);
   struct tm *tm_info = localtime(&timer);
@@ -31,12 +31,13 @@ void print_time(void *NO_USE)
   printf("\r%s", buffer);
   fflush(stdout);
 
-  timer_task_new(1000, print_time, NULL);
+  timer_task_continue(task);
 }
 
 int main(int agrc, char *argv[])
 {
   DBusConnection *connection;
+  timer_task_t *  clock_task = NULL;
 
   if(!dbus_init(DBUS_BUS_SESSION,
                 TEST_DBUS_BUS_NAME,
@@ -50,12 +51,16 @@ int main(int agrc, char *argv[])
   register_root_object(connection);
   register_countdown_object(connection);
 
-  timer_task_new(1000, print_time, NULL);
+  clock_task = timer_task_new(1000, print_time, &clock_task);
 
   dbus_main_loop(connection);
 
+  timer_task_del(clock_task);
+
   unregister_countdown_object(connection);
   unregister_root_object(connection);
+
+  dbus_final(connection);
 
 __failed:
   return 0;

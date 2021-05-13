@@ -16,9 +16,6 @@ sets_t               _queue_object_update_tasks;
 
 /* Private class -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static void message_dispatch(void *data);
-void        process_pading(void *user_data);
-
 /* Private function ----------------------------------------------------------*/
 /* Private class function ----------------------------------------------------*/
 void queue_dispatch(DBusConnection *connection)
@@ -37,7 +34,7 @@ void queue_pading(dbus_object_t *data)
   }
 }
 
-static void message_dispatch(void *data)
+void message_dispatch(void *data)
 {
   DBusConnection *connection = data;
   while(dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS) {

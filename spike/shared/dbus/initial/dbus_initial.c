@@ -40,7 +40,7 @@ bool dbus_init(DBusBusType      type,
 
   dbus_error_init(&err);
 
-  conn = dbus_bus_get(type, &err);
+  conn = dbus_bus_get_private(type, &err);
   if(dbus_error_is_set(&err)) {
     dbus_error_free(&err);
     goto __failed;
@@ -72,7 +72,7 @@ bool dbus_init(DBusBusType      type,
     goto __failed;
   }
 
-  queue_dispatch(conn);
+  message_dispatch(conn);
   dbus_connection_set_dispatch_status_function(conn,
                                                dbus_dispatch_status,
                                                NULL,
@@ -94,6 +94,8 @@ void dbus_final(DBusConnection *connection)
   if(connection == NULL) {
     return;
   }
+
+  dbus_connection_set_dispatch_status_function(connection, NULL, NULL, NULL);
 
   dbus_connection_flush(connection);
   dbus_connection_close(connection);

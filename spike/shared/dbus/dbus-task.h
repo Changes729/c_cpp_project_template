@@ -16,6 +16,7 @@ extern "C" {
 void queue_dispatch(DBusConnection *connection);
 void queue_pading(dbus_object_t *data);
 
+void message_dispatch(void *data);
 void process_pading(void *user_data);
 
 #ifdef __cplusplus
