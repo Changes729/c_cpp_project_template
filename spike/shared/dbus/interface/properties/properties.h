@@ -3,9 +3,7 @@
 #define _PROPERTIES_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus-interface.h"
-#include "dbus_helper.h"
-#include "dbus_object.h"
+#include "dbus-inner-def.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -14,21 +12,11 @@ extern "C" {
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
 /* Public template -----------------------------------------------------------*/
-struct property_data
-{
-  DBusConnection*        conn;
-  DBusPendingPropertySet id;
-  DBusMessage*           message;
-};
-
 /* Public function prototypes ------------------------------------------------*/
 interface_data_t* properties_regist(dbus_object_t* data);
 void              properties_unregist(dbus_object_t* data);
 
 void append_properties(struct interface_data* data, DBusMessageIter* iter);
-void append_property(struct interface_data*   iface,
-                     const DBusPropertyTable* p,
-                     DBusMessageIter*         dict);
 
 void emit_property_changed_full(DBusConnection*          connection,
                                 const char*              path,

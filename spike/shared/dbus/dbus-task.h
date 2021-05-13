@@ -1,9 +1,12 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef _ROOT_OBJECT_H
-#define _ROOT_OBJECT_H
+#ifndef _DBUS_TASK_H
+#define _DBUS_TASK_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
 #include <dbus/dbus.h>
+
+#include "dbus-object.h"
+#include "timer-task.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -13,10 +16,12 @@ extern "C" {
 /* Public typedef ------------------------------------------------------------*/
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
-int  register_root_object(DBusConnection* connection);
-void unregister_root_object(DBusConnection* connection);
+void queue_dispatch(DBusConnection *connection);
+void queue_pading(dbus_object_t *data);
+
+void process_changes(void *user_data);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _ROOT_OBJECT_H */
+#endif /* _DBUS_TASK_H */

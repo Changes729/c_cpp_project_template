@@ -4,9 +4,8 @@
 #include <string.h>
 
 #include "dbus-interface.h"
-#include "dbus_define.h"
-#include "dbus_object.h"
-#include "dbus_task.h"
+#include "dbus-object.h"
+#include "dbus-task.h"
 #include "properties/properties.h"
 
 /* Private namespace ---------------------------------------------------------*/

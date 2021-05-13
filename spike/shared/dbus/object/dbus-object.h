@@ -3,8 +3,7 @@
 #define _DBUS_XML_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_helper.h"
-#include "set-list.h"
+#include "dbus-inner-def.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -12,25 +11,10 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef struct dbus_object
-{
-  DBusConnection*     conn;
-  char*               path;
-  char*               introspect;
-  sets_t              interfaces;
-  sets_t              added;
-  sets_t              removed;
-  sets_t              objects;
-  struct dbus_object* parent;
-  bool                pending_prop;
-} dbus_object_t;
-
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
 dbus_object_t* attach_dbus_object(DBusConnection* conn, const char* path);
 void           detach_dbus_object(DBusConnection* conn, const char* path);
-
-void interface_sets_init(sets_t* sets);
 
 #ifdef __cplusplus
 }

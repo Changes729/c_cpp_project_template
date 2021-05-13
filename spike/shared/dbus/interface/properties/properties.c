@@ -2,11 +2,11 @@
 #include "properties.h"
 /* Private include -----------------------------------------------------------*/
 #include <dbus/dbus.h>
-#include <dbus_error.h>
 #include <string.h>
 
 #include "dbus-interface.h"
-#include "dbus_task.h"
+#include "dbus-error.h"
+#include "dbus-task.h"
 
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -29,6 +29,9 @@ static bool find_property(const DBusPropertyTable * array,
                           const char *              name,
                           const DBusPropertyTable **out);
 
+static void append_property(struct interface_data *  iface,
+                            const DBusPropertyTable *p,
+                            DBusMessageIter *        dict);
 /* Private variables ---------------------------------------------------------*/
 static DBusMethodTable properties_methods[] = {
     {DBUS_METHOD("Get",

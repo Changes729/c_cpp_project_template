@@ -5,9 +5,9 @@
 
 #include "dbus-interface.h"
 #include "dbus_define.h"
-#include "dbus_object.h"
+#include "dbus-object.h"
 #include "introspectable/introspectable.h"
-#include "object_manager/object_manager.h"
+#include "object-manager/object-manager.h"
 #include "properties/properties.h"
 #include "timer-task.h"
 

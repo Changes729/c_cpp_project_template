@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "dbus_task.h"
+#include "dbus-task.h"
 #include "io-flush.h"
 
 /* Private define ------------------------------------------------------------*/

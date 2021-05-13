@@ -1,7 +1,7 @@
 /** See a brief introduction (right-hand button) */
-#include "dbus_task.h"
+#include "dbus-task.h"
 /* Private include -----------------------------------------------------------*/
-#include "object_manager/object_manager.h"
+#include "object-manager/object-manager.h"
 #include "properties/properties.h"
 #include "set-list.h"
 

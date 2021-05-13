@@ -1,10 +1,10 @@
 /** See a brief introduction (right-hand button) */
-#include "root-object.h"
+#include "dbus_root_object.h"
 /* Private include -----------------------------------------------------------*/
 #include "dbus_define.h"
-#include "dbus_object.h"
+#include "dbus-object.h"
 #include "introspectable/introspectable.h"
-#include "object_manager/object_manager.h"
+#include "object-manager/object-manager.h"
 #include "properties/properties.h"
 
 /* Private namespace ---------------------------------------------------------*/

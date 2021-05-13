@@ -1,9 +1,9 @@
 /** See a brief introduction (right-hand button) */
-#include "dbus_object.h"
+#include "dbus-object.h"
 /* Private include -----------------------------------------------------------*/
 #include "dbus-interface.h"
-#include "dbus_error.h"
-#include "dbus_task.h"
+#include "dbus-error.h"
+#include "dbus-task.h"
 #include "string-buffer.h"
 
 /* Private namespace ---------------------------------------------------------*/

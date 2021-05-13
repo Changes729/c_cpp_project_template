@@ -1,8 +1,7 @@
 /** See a brief introduction (right-hand button) */
-#include "object_manager.h"
+#include "object-manager.h"
 /* Private include -----------------------------------------------------------*/
 #include "dbus-interface.h"
-#include "dbus_define.h"
 #include "properties/properties.h"
 
 /* Private define ------------------------------------------------------------*/

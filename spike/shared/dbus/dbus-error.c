@@ -1,5 +1,5 @@
 /** See a brief introduction (right-hand button) */
-#include "dbus_error.h"
+#include "dbus-error.h"
 /* Private include -----------------------------------------------------------*/
 #include <stdarg.h>
 #include <stdio.h>

@@ -37,13 +37,12 @@ file(GLOB LIB_DBUS_HELPER_SRC
 		"shared/dbus/initial/*.c"
 		"shared/dbus/interface/*.c"
 		"shared/dbus/interface/introspectable/*.c"
-		"shared/dbus/interface/object_manager/*.c"
+		"shared/dbus/interface/object-manager/*.c"
 		"shared/dbus/interface/properties/*.c"
 		"shared/dbus/object/*.c"
-		"shared/dbus/object/root-object/*.c"
 )
 
-file(GLOB EXAMPLE_DBUS "src/dbus-example/object/*.c")
+file(GLOB EXAMPLE_DBUS "src/dbus-object-example/object/*.c")
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/server-bindings.h

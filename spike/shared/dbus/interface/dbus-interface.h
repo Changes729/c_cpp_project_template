@@ -3,8 +3,7 @@
 #define _DBUS_INTERFACE_HOME_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus_object.h"
-#include "set-list.h"
+#include "dbus-inner-def.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
@@ -12,17 +11,6 @@ extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
 /* Public typedef ------------------------------------------------------------*/
-typedef struct interface_data
-{
-  char*                    name;
-  const DBusMethodTable*   methods;
-  const DBusSignalTable*   signals;
-  const DBusPropertyTable* properties;
-  sets_t                   pending_prop;
-  void*                    user_data;
-  DBusDestroyFunction      destroy;
-} interface_data_t;
-
 /* Public template -----------------------------------------------------------*/
 /* Public function prototypes ------------------------------------------------*/
 bool find_interface_method(struct dbus_object* dbus_object,

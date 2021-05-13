@@ -5,14 +5,11 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "dbus-example/object/object-countdown.h"
+#include "dbus-object-example/object/object-countdown.h"
 #include "dbus_define.h"
-#include "dbus_helper.h"
 #include "dbus_initial.h"
-#include "dbus_object.h"
-#include "dbus_task.h"
+#include "dbus_root_object.h"
 #include "io-flush.h"
-#include "root-object/root-object.h"
 #include "timer-task.h"
 
 static void dbus_main_loop(DBusConnection *connection);
@@ -75,5 +72,6 @@ static void dbus_main_loop(DBusConnection *connection)
 
 static void sigint_handler(int param)
 {
+  printf("Receive signal int\n");
   main_loop_running = 0;
 }

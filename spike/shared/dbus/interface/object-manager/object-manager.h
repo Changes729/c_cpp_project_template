@@ -3,8 +3,7 @@
 #define _OBJECT_MANAGER_H
 #pragma once
 /* Public include ------------------------------------------------------------*/
-#include "dbus-interface.h"
-#include "dbus_object.h"
+#include "dbus-inner-def.h"
 
 /* Public namespace ----------------------------------------------------------*/
 #ifdef __cplusplus
