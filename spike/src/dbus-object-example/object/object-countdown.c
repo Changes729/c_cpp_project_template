@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 #include "dbus-interface.h"
-#include "dbus_define.h"
 #include "dbus-object.h"
+#include "dbus_define.h"
 #include "introspectable/introspectable.h"
 #include "object-manager/object-manager.h"
 #include "properties/properties.h"
@@ -43,6 +43,7 @@ void              countdown_unregist(dbus_object_t *data);
 
 static void countdown(void *data);
 static void countdown_start(void *data);
+static void countdown_cleanup(_count_down_t *p);
 
 /* Private variables ---------------------------------------------------------*/
 static struct dbus_object root = {
@@ -102,7 +103,7 @@ interface_data_t *countdown_regist(dbus_object_t *data)
                        NULL,
                        countdown_properties,
                        &count_down,
-                       NULL);
+                       (DBusDestroyFunction)countdown_cleanup);
 }
 
 void countdown_unregist(dbus_object_t *data)
@@ -186,4 +187,10 @@ void countdown_start(void *data)
   fflush(stdout);
 
   register_countdown_object(connection);
+}
+
+static void countdown_cleanup(_count_down_t *p)
+{
+  timer_task_del(p->task);
+  p->task = NULL;
 }

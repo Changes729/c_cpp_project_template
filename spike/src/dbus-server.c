@@ -12,13 +12,11 @@
 #include "io-flush.h"
 #include "timer-task.h"
 
-static void dbus_main_loop(DBusConnection *connection);
+static void dbus_main_loop();
 static void sigint_handler(int param);
-void        dbus_dispatch_status(DBusConnection *   connection,
-                                 DBusDispatchStatus new_status,
-                                 void *             data);
 
-static int main_loop_running = 1;
+static int      main_loop_running = 1;
+DBusConnection *connection;
 
 void print_time(void *task)
 {
@@ -31,13 +29,12 @@ void print_time(void *task)
   printf("\r%s", buffer);
   fflush(stdout);
 
-  timer_task_continue(task);
+  timer_task_continue(*(timer_task_t **)task);
 }
 
 int main(int agrc, char *argv[])
 {
-  DBusConnection *connection;
-  timer_task_t *  clock_task = NULL;
+  timer_task_t *clock_task = NULL;
 
   if(!dbus_init(DBUS_BUS_SESSION,
                 TEST_DBUS_BUS_NAME,
@@ -53,20 +50,18 @@ int main(int agrc, char *argv[])
 
   clock_task = timer_task_new(1000, print_time, &clock_task);
 
-  dbus_main_loop(connection);
-
-  timer_task_del(clock_task);
+  dbus_main_loop();
 
   unregister_countdown_object(connection);
   unregister_root_object(connection);
-
   dbus_final(connection);
+  timer_task_del(clock_task);
 
 __failed:
   return 0;
 }
 
-static void dbus_main_loop(DBusConnection *connection)
+static void dbus_main_loop()
 {
   while(main_loop_running) {
     io_flush_select(timer_next_alarm() >> 1);
@@ -78,5 +73,7 @@ static void dbus_main_loop(DBusConnection *connection)
 static void sigint_handler(int param)
 {
   printf("Receive signal int\n");
+
+
   main_loop_running = 0;
 }

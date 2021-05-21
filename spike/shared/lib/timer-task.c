@@ -73,6 +73,10 @@ timer_task_t* timer_task_new(uint32_t ms, operation_cb_t operation, void* user_d
 
 void timer_task_del(timer_task_t* task)
 {
+  if(task == NULL) {
+    return;
+  }
+
   if(IS_POSSESSING(_timer_tasks))
     task->remove = true;
   else
@@ -133,10 +137,12 @@ uint32_t timer_next_alarm()
 static struct timespec _calculate_end_time(uint32_t ms)
 {
   struct timespec time;
-  clock_gettime(CLOCK_MONOTONIC, &time);
+  double          ns;
+  double          curr;
 
-  double ns   = ms * 1e6;
-  double curr = time.tv_sec * 1e9 + time.tv_nsec + ns;
+  clock_gettime(CLOCK_MONOTONIC, &time);
+  ns   = ms * 1e6;
+  curr = time.tv_sec * 1e9 + time.tv_nsec + ns;
 
   time.tv_sec  = curr * 1e-9;
   time.tv_nsec = curr - time.tv_sec * 1e9;

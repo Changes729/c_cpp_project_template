@@ -9,14 +9,50 @@
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
+typedef struct
+{
+  void *        key;
+  timer_task_t *task;
+} timer_map_t;
+
 /* Private template ----------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+static timer_map_t *new_timer_map(void *key, timer_task_t *task);
+static int          timer_map_cmp(const timer_map_t *, const timer_map_t *);
+static void         free_timer_map(timer_map_t *p);
+
 /* Private variables ---------------------------------------------------------*/
 static timer_task_t *_queue_dispatch_task = NULL;
-sets_t               _queue_object_update_tasks;
+sets_t _queue_object_update_tasks = {.cb_cmp = (CompareCallback_t)timer_map_cmp,
+                                     .cb_cleanup = (cleanup_cb_t)free_timer_map};
 
 /* Private class -------------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
 /* Private function ----------------------------------------------------------*/
+static timer_map_t *new_timer_map(void *key, timer_task_t *task)
+{
+  timer_map_t *data = malloc(sizeof(timer_map_t));
+
+  if(data != NULL) {
+    data->key  = key;
+    data->task = task;
+  }
+
+  return data;
+}
+
+static int timer_map_cmp(const timer_map_t *a, const timer_map_t *b)
+{
+  return (intptr_t)a->key - (intptr_t)b->key;
+}
+
+static void free_timer_map(timer_map_t *p)
+{
+  if(p != NULL) {
+    timer_task_del(p->task);
+  }
+  free(p);
+}
+
 /* Private class function ----------------------------------------------------*/
 void queue_dispatch(DBusConnection *connection)
 {
@@ -27,10 +63,10 @@ void queue_dispatch(DBusConnection *connection)
 
 void queue_pading(dbus_object_t *data)
 {
-  if(!sets_find(&_queue_object_update_tasks, data, NULL)) {
-    sets_add(&_queue_object_update_tasks, data);
-    // ! task should run before dbus_object destroy.
-    timer_task_new(0, process_pading, data);
+  timer_map_t find = {data, NULL};
+  if(!sets_find(&_queue_object_update_tasks, &find, NULL)) {
+    timer_task_t *task = timer_task_new(0, process_pading, data);
+    sets_add(&_queue_object_update_tasks, new_timer_map(data, task));
   }
 }
 
@@ -54,5 +90,6 @@ void process_pading(void *user_data)
 
   if(sets_length(&data->removed) > 0) emit_interfaces_removed(data);
 
-  sets_remove(&_queue_object_update_tasks, data);
+  timer_map_t remove = {data, NULL};
+  sets_remove(&_queue_object_update_tasks, &remove);
 }
