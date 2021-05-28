@@ -4,28 +4,36 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
+      "label": "[build] default",
       "type": "shell",
-      "command": "./script/build.sh",
+      "command": "BUILD_TARGET=a.out ./script/build.sh",
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "options": {
+        "env": {
+          "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
+          "CMAKE_OPTIONS": "-DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "BUILD_DIR": "${config:terminal.integrated.env.linux.CMAKE_DEFAULT_BUILD_DIR}"
+        }
       }
     },
     {
-      "label": "run",
+      "label": "[build] deploy",
       "type": "shell",
-      "command": "./script/build.sh -r"
+      "command": "./script/build.sh deploy",
+      "options": {
+        "env": {
+          "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
+          "BUILD_DIR": "${workspaceFolder}/dist"
+        }
+      }
     },
     {
-      "label": "rebuild",
+      "label": "[build] something only",
       "type": "shell",
-      "command": "./script/build.sh -re"
-    },
-    {
-      "label": "debug-build",
-      "type": "shell",
-      "command": "./script/build.sh --debug"
+      "command": "./script/build.sh --target a.out"
     }
   ]
 }
