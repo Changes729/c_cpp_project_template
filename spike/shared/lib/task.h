@@ -28,7 +28,7 @@ typedef struct _task
 /* Public class --------------------------------------------------------------*/
 static inline void task_run(task_t task)
 {
-  if(task.operation != NULL) task.operation(task.data);
+  if(task.operation) task.operation(task.data);
 }
 
 #ifdef __cplusplus

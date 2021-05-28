@@ -78,6 +78,7 @@ bool dbus_init(DBusBusType      type,
                                                NULL,
                                                NULL);
 
+  dbus_connection_set_exit_on_disconnect(conn, FALSE);
   if(connection != NULL) {
     *connection = conn;
   }

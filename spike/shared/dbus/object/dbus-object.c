@@ -1,8 +1,8 @@
 /** See a brief introduction (right-hand button) */
 #include "dbus-object.h"
 /* Private include -----------------------------------------------------------*/
-#include "dbus-interface.h"
 #include "dbus-error.h"
+#include "dbus-interface.h"
 #include "dbus-task.h"
 #include "string-buffer.h"
 
@@ -146,13 +146,18 @@ static DBusHandlerResult generic_handler(DBusConnection *conn,
 
     dbus_error_init(&err);
 
+    interface_data_t *iface = NULL;
+    find_interface_by_name(dbus_object,
+                           dbus_message_get_interface(message),
+                           &iface);
+
     result = DBUS_HANDLER_RESULT_HANDLED;
-    if(find_interface_method(dbus_object,
-                             dbus_message_get_interface(message),
-                             dbus_message_get_member(message),
-                             &function))
+    if(iface != NULL && find_interface_method(dbus_object,
+                                              dbus_message_get_interface(message),
+                                              dbus_message_get_member(message),
+                                              &function))
     {
-      reply = function(conn, message, data);
+      reply = function(conn, message, iface->user_data);
     } else {
       dbus_set_error_const(&err, ERROR_INTERFACE ".Failed", "no such method.");
     }
