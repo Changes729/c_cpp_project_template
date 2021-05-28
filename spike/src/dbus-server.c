@@ -5,22 +5,20 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "dbus-object-example/object/object-countdown.h"
 #include "dbus_define.h"
-#include "dbus_epoll.h"
-#include "dbus_helper.h"
-#include "dbus_object.h"
+#include "dbus_initial.h"
+#include "dbus_root_object.h"
 #include "io-flush.h"
 #include "timer-task.h"
 
-static void dbus_main_loop(DBusConnection *dbus_address);
+static void dbus_main_loop();
 static void sigint_handler(int param);
-void        dbus_dispatch_status(DBusConnection *   connection,
-                                 DBusDispatchStatus new_status,
-                                 void *             data);
 
-static DBusConnection *dbus_address;
+static int      main_loop_running = 1;
+DBusConnection *connection;
 
-void print_time(void *NO_USE)
+void print_time(void *task)
 {
   time_t     timer   = time(NULL);
   struct tm *tm_info = localtime(&timer);
@@ -31,68 +29,42 @@ void print_time(void *NO_USE)
   printf("\r%s", buffer);
   fflush(stdout);
 
-  timer_task_new(1000, print_time, NULL);
+  timer_task_continue(*(timer_task_t **)task);
 }
 
 int main(int agrc, char *argv[])
 {
-  signal(SIGINT, sigint_handler);
+  timer_task_t *clock_task = NULL;
 
-  DBusError err;
-
-  dbus_error_init(&err);
-
-  // dbus address
-  dbus_address = dbus_bus_get(DBUS_BUS_SESSION, &err);
-  if(dbus_error_is_set(&err)) {
-    fprintf(stderr, "Connection Error(%s) \n", err.message);
-    dbus_error_free(&err);
-    goto __failed;
-  }
-
-  // bus name
-  dbus_bus_request_name(dbus_address,
-                        TEST_DBUS_BUS_NAME,
-                        DBUS_NAME_FLAG_REPLACE_EXISTING,
-                        &err);
-  if(dbus_error_is_set(&err)) {
-    fprintf(stderr, "Requece name error(%s) \n", err.message);
-    dbus_error_free(&err);
-    goto __failed;
-  }
-
-  if(!dbus_connection_set_watch_functions(dbus_address,
-                                          _add_watch,
-                                          _remove_watch,
-                                          NULL,
-                                          NULL,
-                                          NULL))
+  if(!dbus_init(DBUS_BUS_SESSION,
+                TEST_DBUS_BUS_NAME,
+                DBUS_NAME_FLAG_REPLACE_EXISTING,
+                &connection))
   {
-    fprintf(stderr, "dbus_connection_set_watch_functions failed\n");
     goto __failed;
   }
 
-  dbus_connection_set_dispatch_status_function(dbus_address,
-                                               dbus_dispatch_status,
-                                               NULL,
-                                               NULL);
+  signal(SIGINT, sigint_handler);
+  register_root_object(connection);
+  register_countdown_object(connection);
 
-  register_dbus_object_path(dbus_address);
+  clock_task = timer_task_new(1000, print_time, &clock_task);
 
-  timer_task_new(1000, print_time, NULL);
+  dbus_main_loop();
 
-  dbus_main_loop(dbus_address);
-
-  unregister_dbus_object_path(dbus_address);
+  unregister_countdown_object(connection);
+  unregister_root_object(connection);
+  dbus_final(connection);
+  timer_task_del(clock_task);
 
 __failed:
   return 0;
 }
 
-static void dbus_main_loop(DBusConnection *dbus_address)
+static void dbus_main_loop()
 {
-  while(TRUE) {
-    io_flush_select(timer_next_alarm());
+  while(main_loop_running) {
+    io_flush_select(timer_next_alarm() >> 1);
 
     timer_run();
   }
@@ -100,24 +72,8 @@ static void dbus_main_loop(DBusConnection *dbus_address)
 
 static void sigint_handler(int param)
 {
-  unregister_dbus_object_path(dbus_address);
+  printf("Receive signal int\n");
 
-  exit(0);
-}
 
-void dbus_dispatch_status(DBusConnection *   connection,
-                          DBusDispatchStatus new_status,
-                          void *             data)
-{
-  switch(new_status) {
-    case DBUS_DISPATCH_DATA_REMAINS:
-      while(dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS)
-        ;
-      break;
-    case DBUS_DISPATCH_COMPLETE:
-      break;
-    case DBUS_DISPATCH_NEED_MEMORY:
-    default:
-      break;
-  }
+  main_loop_running = 0;
 }

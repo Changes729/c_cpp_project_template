@@ -209,14 +209,27 @@ bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data)
 void io_ignore_file(int fd)
 {
   io_node_t* node;
+  bool       remove = false;
   list_foreach(list_node, &io_list_head.head)
   {
-    node = list_node->data;
-    if(node->pkg.fd == fd) {
-      IS_POSSESSING(io_list_head) ? _io_list_mark_remove(node)
-                                  : _io_list_remove_node(list_node);
-      break;
+    if(remove) {
+      list_t* node_prev = list_get_prev(&io_list_head.head, list_node);
+      node              = node_prev->data;
+
+      IS_POSSESSING(io_list_head)
+      ? _io_list_mark_remove(node) : _io_list_remove_node(node_prev);
     }
+
+    node   = list_node->data;
+    remove = (node->pkg.fd == fd);
+  }
+
+  if(remove) {
+    list_t* node_prev = list_get_last(&io_list_head.head);
+    node              = node_prev->data;
+
+    IS_POSSESSING(io_list_head)
+    ? _io_list_mark_remove(node) : _io_list_remove_node(node_prev);
   }
 }
 
@@ -251,5 +264,10 @@ static inline void _io_list_mark_remove(io_node_t* node)
 
 static inline void _io_list_remove_node(list_t* list_node)
 {
+  if(_epoll_fd != -1) {
+    io_node_t* node = list_node->data;
+    epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, node->pkg.fd, NULL);
+  }
+
   free(list_node_remove(list_node));
 }

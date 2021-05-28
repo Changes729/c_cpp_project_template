@@ -37,6 +37,11 @@ unsigned     sets_length(const sets_t* set);
 void         sets_foreach(sets_t* set, Function_t callback, void* userdata);
 list_head_t* sets_get_listhead(sets_t* sets);
 
+#define is_sets_empty(_sets) sets_length(_sets) == 0
+#define sets_foreach_data(_val, _sets)                                            \
+  for(list_head_t* _head = sets_get_listhead(_sets); _head != NULL; _head = NULL) \
+  list_foreach_data(_val, _head)
+
 #ifdef __cplusplus
 }
 #endif

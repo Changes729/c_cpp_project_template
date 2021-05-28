@@ -100,19 +100,33 @@ bool is_list_empty(const list_head_t *list);
       val         = list_get_prev(list, val))
 
 #define list_foreach_data(_val, list)                                          \
-  for(list_t *val = list_get_next(list, NULL); val != NULL;                    \
-      val         = list_get_next(list, val))                                  \
-    for((_val) = val->data; (_val) != NULL; (_val) = NULL)
+  for(int _run = 1; _run == 1; _run = 0)                                       \
+    for(list_t *val = list_get_next(list, NULL); val != NULL;                  \
+        val         = list_get_next(list, val))                                \
+      for((_val) = val->data, _run = 1; _run == 1; _run = 0)
 
 #define list_foreach_data_r(_val, list)                                        \
-  for(list_t *val = list_get_prev(list, NULL); val != NULL;                    \
-      val         = list_get_prev(list, val))                                  \
-    for((_val) = val->data; (_val) != NULL; (_val) = NULL)
+  for(int _run = 1; _run == 1; _run = 0)                                       \
+    for(list_t *val = list_get_prev(list, NULL); val != NULL;                  \
+        val         = list_get_prev(list, val))                                \
+      for((_val) = val->data, _run = 1; _run == 1; _run = 0)
 
 #define list_add_data_head(list_head, data) list_append(list_head, data, NULL)
 #define list_add_data_tail(list_head, data) list_prepend(list_head, data, NULL)
 #define list_get_first(list_head)           list_get_next(list_head, NULL)
 #define list_get_last(list_head)            list_get_prev(list_head, NULL)
+
+#define list_cleanup_foreach_data(_val, list)                                  \
+  for(int _run = 1; _run == 1; _run = 0)                                       \
+    for(list_t *_free = list_get_next(list, NULL); _free != NULL;              \
+        _free         = list_get_next(list, NULL))                             \
+      for(_val = _free->data, _run = 1; _run == 1; _run = 0)
+
+#define list_cleanup(list)                                                     \
+  do {                                                                         \
+    void *_UNUSED_ __attribute__((unused));                                    \
+    list_cleanup_foreach_data(_UNUSED_, list);                                 \
+  } while(0)
 
 #ifdef __cplusplus
 }

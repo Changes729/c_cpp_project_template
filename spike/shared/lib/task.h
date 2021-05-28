@@ -10,6 +10,12 @@
 extern "C" {
 #endif
 /* Public define -------------------------------------------------------------*/
+#define MAKE_TASK(_data, _operation)                                           \
+  (task_t)                                                                     \
+  {                                                                            \
+    .data = _data, .operation = (operation_cb_t)_operation                     \
+  }
+
 /* Public typedef ------------------------------------------------------------*/
 typedef struct _task
 {
@@ -22,7 +28,7 @@ typedef struct _task
 /* Public class --------------------------------------------------------------*/
 static inline void task_run(task_t task)
 {
-  return task.operation(task.data);
+  if(task.operation != NULL) task.operation(task.data);
 }
 
 #ifdef __cplusplus
