@@ -233,6 +233,29 @@ void io_ignore_file(int fd)
   }
 }
 
+bool io_notice_file_update(fd_desc_t pkg)
+{
+  io_node_t* node;
+  list_foreach_data(node, &io_list_head.head)
+  {
+    if(node->pkg.fd == pkg.fd) {
+      node->pkg.flag = pkg.flag;
+      if(_epoll_fd != -1) {
+        uint32_t cond = 0;
+        if(node->pkg.flag & IO_NOTICE_READ) cond |= POLLIN;
+        if(node->pkg.flag & IO_NOTICE_WRITE) cond |= POLLOUT;
+        if(node->pkg.flag & IO_NOTICE_ERR) cond |= POLLERR;
+        if(node->pkg.flag & IO_NOTICE_HUP) cond |= POLLHUP;
+
+        struct epoll_event data = {.events = cond, .data = {.ptr = node}};
+        epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, node->pkg.fd, &data);
+      }
+
+      break;
+    }
+  }
+}
+
 static void _io_list_after_loop()
 {
   io_node_t* node;

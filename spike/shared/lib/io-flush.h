@@ -40,6 +40,8 @@ void io_flush_epoll(uint32_t ms);
 bool io_notice_file(fd_desc_t pkg, fd_callback_t callback, void* user_data);
 void io_ignore_file(int fd);
 
+bool io_notice_file_update(fd_desc_t pkg);
+
 #ifdef __cplusplus
 }
 #endif

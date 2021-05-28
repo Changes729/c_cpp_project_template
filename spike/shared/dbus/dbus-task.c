@@ -73,9 +73,17 @@ void queue_pading(dbus_object_t *data)
 void message_dispatch(void *data)
 {
   DBusConnection *connection = data;
+
+  if(dbus_connection_get_dispatch_status(connection) == DBUS_DISPATCH_COMPLETE) {
+    timer_task_del(_queue_dispatch_task);
+    _queue_dispatch_task = NULL;
+    return;
+  }
+
   while(dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS) {
   }
 
+  timer_task_del(_queue_dispatch_task);
   _queue_dispatch_task = NULL;
 }
 
