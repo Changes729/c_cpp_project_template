@@ -1,64 +1,46 @@
 #!/bin/bash
 
-# export CMAKE_PROJECT_NAME="output"
-
 SCRIPT_DIR=$(dirname $(readlink -f "$0"))
 MAIN_DIR=$SCRIPT_DIR/..
 
-debug() {
-  cd $MAIN_DIR/build
-  cmake .. -DCMAKE_BUILD_TYPE=DEBUG && cmake --build .
+if [ -z $BUILD_DIR ]; then
+  BUILD_DIR=$MAIN_DIR/build
+fi
+
+function usage() {
+  local help="Usage: $0 <deploy>"
+
+  echo "$help"
 }
 
-clean() {
-  if [ -f ./build/CMakeCache.txt ]; then
-    rm ./build/CMakeCache.txt
-  fi
+function env_deploy() {
+  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DFORCE_BUILD_TYPE=RelWithDebInfo"
 }
 
-build() {
-  cd $MAIN_DIR/build
-  cmake .. && cmake --build .
-}
-
-run() {
-  if [ -d $MAIN_DIR/build/bin ]; then
-    cd $MAIN_DIR/build/bin
-  else
-    build
+function build() {
+  if [ ! -d $BUILD_DIR ]; then
+    mkdir -p $BUILD_DIR
   fi
 
-  if [ ! -f $CMAKE_PROJECT_NAME ]; then
-    build
-  fi
-
-  ./$CMAKE_PROJECT_NAME
+  cd $BUILD_DIR
+  cmake $MAIN_DIR $CMAKE_OPTIONS && cmake --build . $*
 }
 
 ## Start from here. #####################################
 input=$1
 
-if [ ! -d ./build ]; then
-  mkdir build
-fi
-
 case "$input" in
-"--debug")
-  debug
+"-h" | "--help")
+  usage
+  exit 1
   ;;
-"--clean" | "-c")
-  clean
-  ;;
-"--build" | "-b")
-  build
-  ;;
-"--rebuild" | "-re")
-  clean && build
-  ;;
-"--run" | "-r")
-  run
+
+"deploy")
+  env_deploy
+
+  build ${@:2}
   ;;
 *)
-  clean && build && run
+  build ${@:1}
   ;;
 esac
