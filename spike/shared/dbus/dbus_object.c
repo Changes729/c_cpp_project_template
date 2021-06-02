@@ -304,7 +304,7 @@ server_message_handler(DBusConnection *conn, DBusMessage *message, void *data)
     dbus_error_init(&err);
 
     result   = DBUS_HANDLER_RESULT_HANDLED;
-    function = find_interface_method(message, dbus_object);
+    function = find_interface_method(message, xxx);
     if(NULL == function) {
       dbus_set_error_const(&err, ERROR_INTERFACE ".Failed", "no such method.");
     } else {
