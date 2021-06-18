@@ -98,3 +98,5 @@ target_link_libraries(glib-dbus-client ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBU
 
 target_link_libraries(glib-dbus-server2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
 target_link_libraries(glib-dbus-client2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${GIO_LIBRARIES})
+
+target_link_libraries(thread_mem_attack pthread)
