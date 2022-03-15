@@ -21,6 +21,11 @@ build() {
   cmake .. && cmake --build .
 }
 
+build_arm() {
+  cd $MAIN_DIR/build
+  cmake -DCMAKE_TOOLCHAIN_FILE=../arm_linux_setup.cmake .. && cmake --build .
+}
+
 run() {
   cd $MAIN_DIR/build
 
@@ -54,6 +59,11 @@ case "$input" in
 "--run" | "-r")
   run
   ;;
+
+"--arm")
+  build_arm
+  ;;
+
 *)
   clean && build && run
   ;;

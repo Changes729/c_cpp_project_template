@@ -26,6 +26,11 @@
       "label": "debug-build",
       "type": "shell",
       "command": "./script/build.sh --debug"
+    },
+    {
+      "label": "cross-build-arm",
+      "type": "shell",
+      "command": "./script/build.sh --arm"
     }
   ]
 }
