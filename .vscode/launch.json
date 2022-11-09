@@ -9,13 +9,41 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
-      "args": [],
+      "args": ["--add"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
       "externalConsole": false,
       "MIMode": "gdb",
       "preLaunchTask": "[build] default"
+    },
+    {
+      "name": "(gdb-windows) remote device",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build_windows/bin/a.out.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/home/asuki/GitSource/Project/gdb-12.1/build/x86_64-w64-mingw32/install/bin/x86_64-w64-mingw32-gdb",
+      "miDebuggerServerAddress": "192.168.1.104:1234"
+    },
+    {
+      "name": "(gdb-arm) remote device",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build_arm/bin/a.out.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/arm-none-eabi-gdb",
+      "miDebuggerServerAddress": "192.168.1.142:1234"
     }
   ]
 }

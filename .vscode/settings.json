@@ -8,5 +8,9 @@
     70,
     80,
     100
-  ]
+  ],
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "if.h": "c"
+  }
 }

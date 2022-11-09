@@ -19,6 +19,10 @@ else()
   set(ENV{CMAKE_PROJECT_VERSION} ${CPACK_PROJECT_VERSION})
 endif()
 
+if(CMAKE_TOOLCHAIN_FILE)
+  MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
 ## set Compiler Flags.
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)

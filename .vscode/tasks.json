@@ -6,7 +6,7 @@
     {
       "label": "[build] default",
       "type": "shell",
-      "command": "BUILD_TARGET=a.out ./script/build.sh",
+      "command": "./script/build.sh",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -27,6 +27,30 @@
         "env": {
           "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
           "BUILD_DIR": "${workspaceFolder}/dist"
+        }
+      }
+    },
+    {
+      "label": "[build - Windows] cross compile",
+      "type": "shell",
+      "command": "./script/build.sh -j8",
+      "options": {
+        "env": {
+          "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
+          "CMAKE_OPTIONS": "-DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_TOOLCHAIN_FILE=./tools/windows/windows.toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "BUILD_DIR": "build_windows"
+        }
+      }
+    },
+    {
+      "label": "[build - ARM] cross compile",
+      "type": "shell",
+      "command": "./script/build.sh -j8",
+      "options": {
+        "env": {
+          "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
+          "CMAKE_OPTIONS": "-DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_TOOLCHAIN_FILE=./tools/arm/arm.toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "BUILD_DIR": "build_arm"
         }
       }
     },
