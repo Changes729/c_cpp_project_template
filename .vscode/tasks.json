@@ -55,6 +55,18 @@
       }
     },
     {
+      "label": "[build - x86] cross compile",
+      "type": "shell",
+      "command": "./script/build.sh -j8",
+      "options": {
+        "env": {
+          "CMAKE_PROJECT_NAME": "${config:terminal.integrated.env.linux.CMAKE_OVERRIDE_PROJECT_NAME}",
+          "CMAKE_OPTIONS": "-DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_TOOLCHAIN_FILE=./tools/linux_pc/x86.toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "BUILD_DIR": "build_x86"
+        }
+      }
+    },
+    {
       "label": "[build] something only",
       "type": "shell",
       "command": "./script/build.sh --target a.out"
