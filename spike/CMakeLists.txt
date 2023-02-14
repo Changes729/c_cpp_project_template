@@ -30,8 +30,12 @@ pkg_check_modules(GIO REQUIRED gio-2.0)
 include_directories(${GIO_INCLUDE_DIRS})
 link_directories(${GIO_LIBRARY_DIRS})
 
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+link_directories(${SDL2_LIBRARY_DIRS})
+
 # include .c/.cpp ##############################################################
-file(GLOB EXAMPLES_C "src/*.c")
+file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp")
 file(GLOB SHARED_C "shared/*.c")
 file(GLOB LIB_SRC "shared/lib/*.c")
 
@@ -100,3 +104,4 @@ target_link_libraries(glib-dbus-server2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DB
 target_link_libraries(glib-dbus-client2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${GIO_LIBRARIES})
 
 target_link_libraries(thread_mem_attack pthread)
+target_link_libraries(sdl_triangle ${SDL2_LIBRARIES})
