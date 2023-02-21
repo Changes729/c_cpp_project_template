@@ -10,7 +10,7 @@
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 # Target definition
-set(CMAKE_SYSTEM_NAME  Generic)
+set(CMAKE_SYSTEM_NAME  Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
 #---------------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ set(CMAKE_SYSTEM_PROCESSOR x86_64)
 set(TOOLCHAIN x86_64-buildroot-linux-gnu)
 if(NOT DEFINED TOOLCHAIN_PREFIX)
     if(CMAKE_HOST_SYSTEM_NAME STREQUAL Linux)
-        set(TOOLCHAIN_PREFIX "/home/asuki/GitSource/buildroot/output/images/x86_64-buildroot-linux-gnu_sdk-buildroot")
+        set(TOOLCHAIN_PREFIX "/home/asuki/GitSource/buildroot/output/host")
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Darwin)
         set(TOOLCHAIN_PREFIX "/usr/local")
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
@@ -29,6 +29,7 @@ if(NOT DEFINED TOOLCHAIN_PREFIX)
         message(STATUS "No TOOLCHAIN_PREFIX specified, using default: " ${TOOLCHAIN_PREFIX})
     endif()
 endif()
+set(CMAKE_SYSROOT ${TOOLCHAIN_PREFIX}/${TOOLCHAIN}/sysroot)
 set(TOOLCHAIN_BIN_DIR ${TOOLCHAIN_PREFIX}/bin)
 set(TOOLCHAIN_INC_DIR ${TOOLCHAIN_PREFIX}/${TOOLCHAIN}/include)
 set(TOOLCHAIN_LIB_DIR ${TOOLCHAIN_PREFIX}/${TOOLCHAIN}/lib)

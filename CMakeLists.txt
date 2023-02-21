@@ -54,6 +54,11 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/linux_pc)
 
 ## support pkg_check_modules
 find_package(PkgConfig REQUIRED)
+include(CheckSymbolExists)
+include(CheckCSourceCompiles)
+include(CheckCSourceRuns)
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 
 add_subdirectory(3rdparty/googletest)
 
@@ -61,6 +66,18 @@ add_subdirectory(3rdparty/googletest)
 # include_directories(${LIBUSB_INCLUDE_DIRS})
 # link_directories(${LIBUSB_LIBRARY_DIRS})
 # link_libraries(${LIBUSB_LIBRARIES})
+
+set(PTHREAD_CFLAGS "-D_REENTRANT")
+set(PTHREAD_LDFLAGS "-pthread")
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
+CHECK_C_SOURCE_COMPILES("
+  #include <pthread.h>
+  int main(int argc, char** argv) {
+    pthread_attr_t type;
+    pthread_attr_init(&type);
+    return 0;
+  }" HAVE_PTHREADS)
+message("HAVE_PTHREADS:" ${HAVE_PTHREADS})
 
 add_subdirectory(src)
 
