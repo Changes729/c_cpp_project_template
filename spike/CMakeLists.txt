@@ -10,34 +10,34 @@ include_directories(shared/dbus/object)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # find library #################################################################
-pkg_check_modules(GLIB REQUIRED glib-2.0)
+pkg_check_modules(GLIB glib-2.0)
 include_directories(${GLIB_INCLUDE_DIRS})
 link_directories(${GLIB_LIBRARY_DIRS})
 
-pkg_check_modules(DBUS REQUIRED dbus-1)
+pkg_check_modules(DBUS dbus-1)
 include_directories(${DBUS_INCLUDE_DIRS})
 link_directories(${DBUS_LIBRARY_DIRS})
 
-pkg_check_modules(DBUS_GLIB REQUIRED dbus-glib-1)
+pkg_check_modules(DBUS_GLIB dbus-glib-1)
 include_directories(${DBUS_GLIB_INCLUDE_DIRS})
 link_directories(${DBUS_GLIB_LIBRARY_DIRS})
 
-pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
+pkg_check_modules(GOBJECT gobject-2.0)
 include_directories(${GOBJECT_INCLUDE_DIRS})
 link_directories(${GOBJECT_LIBRARY_DIRS})
 
-pkg_check_modules(GIO REQUIRED gio-2.0)
+pkg_check_modules(GIO gio-2.0)
 include_directories(${GIO_INCLUDE_DIRS})
 link_directories(${GIO_LIBRARY_DIRS})
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 link_directories(${SDL2_LIBRARY_DIRS})
 
 # include .c/.cpp ##############################################################
 file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp")
 file(GLOB SHARED_C "shared/*.c")
-file(GLOB LIB_SRC "shared/lib/*.c")
+file(GLOB LIB_SRC "shared/lib/*.c" "shared/lib/*.cpp")
 
 file(GLOB LIB_DBUS_HELPER_SRC
 		"shared/dbus/*.c"
