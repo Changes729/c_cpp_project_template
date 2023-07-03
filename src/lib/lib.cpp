@@ -1,6 +1,6 @@
 
 /** See a brief introduction (right-hand button) */
-#include"example.h"
+#include"lib.h"
 /* Private include -----------------------------------------------------------*/
 #include <stdio.h>
 

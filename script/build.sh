@@ -56,15 +56,12 @@ case "$input" in
 "--rebuild" | "-re")
   clean && build
   ;;
-"--run" | "-r")
-  run
-  ;;
 
 "--arm")
   build_arm
   ;;
 
 *)
-  clean && build && run
+  clean && build
   ;;
 esac

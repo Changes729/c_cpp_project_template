@@ -1,5 +1,5 @@
 {
   "terminal.integrated.env.linux": {
-    "CMAKE_PROJECT_NAME": "a.out"
+    "CMAKE_PROJECT_NAME": "module"
   }
 }
