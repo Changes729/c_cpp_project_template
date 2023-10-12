@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.27.0)
 project(Playground VERSION 0.1.0)
 
 if(DEFINED ENV{CMAKE_PROJECT_NAME})
@@ -18,14 +18,10 @@ endif()
 # message("Executable Name: " ${CPACK_PROJECT_NAME})
 message("Executable Name: " $ENV{CMAKE_PROJECT_NAME})
 
-include_directories(
-  src/example
-)
+add_library( example src/example.cpp )
 
-add_executable( ${CPACK_PROJECT_NAME}
-  src/main.c
-
-  src/example/example.cpp
+target_include_directories( example SYSTEM
+  INTERFACE src
 )
 
 # Cannot check this.
