@@ -36,6 +36,7 @@ link_directories(${SDL2_LIBRARY_DIRS})
 
 # include .c/.cpp ##############################################################
 file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp")
+file(GLOB DESIGN_PATTERN_C "src/design-pattern/*.c" "src/design-pattern/*.cpp")
 file(GLOB SHARED_C "shared/*.c")
 file(GLOB LIB_SRC "shared/lib/*.c" "shared/lib/*.cpp")
 
@@ -82,6 +83,13 @@ target_link_libraries(dbus_example_object project_library ${DBUS_LIBRARIES})
 
 # generate exec obj ############################################################
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
+	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)
+	set (SOURCE_FILES ${EXAMPLE_FILE})
+	add_executable(${EXAMPLE} ${GLIB_DBUS_BINDING_FILES} ${SOURCE_FILES} ${SHARED_C})
+	target_link_libraries(${EXAMPLE} project_library)
+endforeach(EXAMPLE_FILE)
+
+foreach(EXAMPLE_FILE ${DESIGN_PATTERN_C})
 	get_filename_component(EXAMPLE ${EXAMPLE_FILE} NAME_WE)
 	set (SOURCE_FILES ${EXAMPLE_FILE})
 	add_executable(${EXAMPLE} ${GLIB_DBUS_BINDING_FILES} ${SOURCE_FILES} ${SHARED_C})
