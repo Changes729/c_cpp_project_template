@@ -2,7 +2,7 @@
 #include "screen.h"
 /* Private include -----------------------------------------------------------*/
 #include <assert.h>
-
+#include <string.h>
 /* Private namespace ---------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define bitSet(value, bit)  ((value) |= (1UL << (bit)))

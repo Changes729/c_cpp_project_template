@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 4.0.0)
 project(Playground VERSION 0.1.0)
 
 ## set CPACK_PROJECT_NAME
@@ -60,7 +60,7 @@ include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
-add_subdirectory(3rdparty/googletest)
+# add_subdirectory(3rdparty/googletest)
 
 # pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 # include_directories(${LIBUSB_INCLUDE_DIRS})
@@ -79,11 +79,11 @@ CHECK_C_SOURCE_COMPILES("
   }" HAVE_PTHREADS)
 message("HAVE_PTHREADS:" ${HAVE_PTHREADS})
 
-add_subdirectory(src)
+# add_subdirectory(src)
 
 if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
 message("build spike subdirectory")
 add_subdirectory(spike)
 endif()
 
-add_subdirectory(test)
+# add_subdirectory(test)

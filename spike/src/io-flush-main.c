@@ -44,7 +44,7 @@ int main(void)
   }
 
 #if USE_EPOLL
-  io_epoll_fd_deinit(UINT32_MAX);
+  io_epoll_fd_deinit();
 #endif
 
   return 0;

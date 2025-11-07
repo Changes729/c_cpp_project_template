@@ -34,6 +34,11 @@ find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 link_directories(${SDL2_LIBRARY_DIRS})
 
+pkg_check_modules(LIBUSB libusb-1.0)
+include_directories(${LIBUSB_INCLUDE_DIRS})
+link_directories(${LIBUSB_LIBRARY_DIRS})
+
+
 # include .c/.cpp ##############################################################
 file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp")
 file(GLOB DESIGN_PATTERN_C "src/design-pattern/*.c" "src/design-pattern/*.cpp")
@@ -113,3 +118,7 @@ target_link_libraries(glib-dbus-client2 ${DBUS_LIBRARIES} ${GLIB_LIBRARIES} ${DB
 
 target_link_libraries(thread_mem_attack pthread)
 target_link_libraries(sdl_triangle ${SDL2_LIBRARIES})
+
+target_link_libraries(readline-example readline)
+target_link_libraries(testlibusb ${LIBUSB_LIBRARIES})
+target_link_libraries(udev_device udev)

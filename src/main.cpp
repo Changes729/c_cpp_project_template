@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdint.h>
 
 std::string get_udev_path(uint16_t vid, uint16_t pid)
 {
