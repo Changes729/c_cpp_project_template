@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 4.0.0)
 project(Playground VERSION 0.1.0)
 
 ## set CPACK_PROJECT_NAME
@@ -21,9 +21,17 @@ endif()
 
 ## set Compiler Flags.
 include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++23" COMPILER_SUPPORTS_CXX23)
+CHECK_CXX_COMPILER_FLAG("-std=c++20" COMPILER_SUPPORTS_CXX20)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 CHECK_CXX_COMPILER_FLAG("-std=c++1z" COMPILER_SUPPORTS_CXX1Z)
-if(COMPILER_SUPPORTS_CXX17)
+if(COMPILER_SUPPORTS_CXX23)
+  message("Use std C++23.")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
+elseif(COMPILER_SUPPORTS_CXX20)
+  message("Use std C++20.")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+elseif(COMPILER_SUPPORTS_CXX17)
   message("Use std C++17.")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 elseif(COMPILER_SUPPORTS_CXX1Z)
