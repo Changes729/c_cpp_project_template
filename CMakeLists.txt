@@ -39,9 +39,9 @@ endif()
 
 ## extra compiler warnings
 if ("${CMAKE_C_COMPILER_ID}" MATCHES ".*Clang.*")
-	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-variable -Wswitch-default -Werror")
+	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-variable -Werror")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-but-set-variable -Wunused-variable -Wswitch-default -Werror")
+	SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wunused-but-set-variable -Wunused-variable -Werror")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
 endif()
@@ -59,8 +59,6 @@ include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-
-# add_subdirectory(3rdparty/googletest)
 
 # pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 # include_directories(${LIBUSB_INCLUDE_DIRS})
@@ -86,4 +84,4 @@ message("build spike subdirectory")
 add_subdirectory(spike)
 endif()
 
-# add_subdirectory(test)
+add_subdirectory(test)

@@ -7,7 +7,26 @@ include_directories(shared/dbus)
 include_directories(shared/dbus/initial)
 include_directories(shared/dbus/interface)
 include_directories(shared/dbus/object)
+# include_directories(shared/lvgl)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+## FetchContent 3rd-party lib ##################################################
+include(FetchContent)
+
+FetchContent_Declare(
+  LVGL
+  GIT_REPOSITORY git@github.com:lvgl/lvgl.git
+  GIT_TAG v9.4.0
+)
+set(LV_BUILD_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/shared/lvgl/lv_conf.h)
+FetchContent_MakeAvailable(LVGL)
+
+FetchContent_Declare(
+  LVGL
+  GIT_REPOSITORY git@github.com:lvgl/lvgl.git
+  GIT_TAG v9.4.0
+)
+FetchContent_MakeAvailable(LVGL)
 
 # find library #################################################################
 pkg_check_modules(GLIB glib-2.0)

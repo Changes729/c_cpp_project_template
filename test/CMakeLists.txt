@@ -1,3 +1,13 @@
+## FetchContent 3rd-party lib ##################################################
+include(FetchContent)
+
+FetchContent_Declare(
+  GoogleTest
+  GIT_REPOSITORY git@github.com:google/googletest.git
+  GIT_TAG v1.17.0
+)
+FetchContent_MakeAvailable(GoogleTest)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/test)
 
 set(SPIKE_DIR ../shared)
