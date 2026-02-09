@@ -7,8 +7,8 @@ include_directories(shared/dbus)
 include_directories(shared/dbus/initial)
 include_directories(shared/dbus/interface)
 include_directories(shared/dbus/object)
-# include_directories(shared/lvgl)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(src/lvgl-lib)
 
 ## FetchContent 3rd-party lib ##################################################
 include(FetchContent)
@@ -19,13 +19,6 @@ FetchContent_Declare(
   GIT_TAG v9.4.0
 )
 set(LV_BUILD_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/shared/lvgl/lv_conf.h)
-FetchContent_MakeAvailable(LVGL)
-
-FetchContent_Declare(
-  LVGL
-  GIT_REPOSITORY git@github.com:lvgl/lvgl.git
-  GIT_TAG v9.4.0
-)
 FetchContent_MakeAvailable(LVGL)
 
 # find library #################################################################
@@ -52,6 +45,26 @@ link_directories(${GIO_LIBRARY_DIRS})
 find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 link_directories(${SDL2_LIBRARY_DIRS})
+if (NOT SDL2_FOUND)
+    include(FetchContent)
+    if (MSVC)
+        FetchContent_Declare(
+                SDL2
+                URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+                URL_MD5 22bdb85ce4874673c4fafcce772d8b72
+        )
+    elseif (MINGW)
+        FetchContent_Declare(
+                SDL2
+                URL https://www.libsdl.org/release/SDL2-devel-2.0.9-mingw.tar.gz
+                URL_MD5 f5645eed64214c3bc22a3e157fc1f15f
+        )
+    else ()
+        message(FATAL_ERROR "SDL2 not available")
+    endif ()
+    FetchContent_MakeAvailable(SDL2)
+    set(SDL2_ROOT_DIR ${sdl2_SOURCE_DIR})
+endif ()
 
 pkg_check_modules(LIBUSB libusb-1.0)
 include_directories(${LIBUSB_INCLUDE_DIRS})
@@ -75,6 +88,12 @@ file(GLOB LIB_DBUS_HELPER_SRC
 )
 
 file(GLOB EXAMPLE_DBUS "src/dbus-object-example/object/*.c")
+
+file(GLOB LVGL_LIB_SRC
+		"src/lvgl-lib/*.c"
+		"src/lvgl-lib/display_backends/*.c"
+		"src/lvgl-lib/indev_backends/*.c"
+)
 
 # generate .h ##################################################################
 add_custom_command(
@@ -104,6 +123,10 @@ target_link_libraries(lib_dbus_helper project_library ${DBUS_LIBRARIES})
 
 add_library(dbus_example_object ${EXAMPLE_DBUS} ${LIB_DBUS_HELPER_SRC})
 target_link_libraries(dbus_example_object project_library ${DBUS_LIBRARIES})
+
+add_library(lvgl_lib ${LVGL_LIB_SRC})
+target_link_libraries(lvgl_lib lvgl)
+
 
 # generate exec obj ############################################################
 foreach(EXAMPLE_FILE ${EXAMPLES_C})
@@ -141,3 +164,6 @@ target_link_libraries(sdl_triangle ${SDL2_LIBRARIES})
 target_link_libraries(readline-example readline)
 target_link_libraries(testlibusb ${LIBUSB_LIBRARIES})
 target_link_libraries(udev_device udev)
+
+target_link_libraries(lvgl-simple lvgl lvgl_lib)
+target_link_libraries(lvgl PRIVATE SDL2::SDL2)
