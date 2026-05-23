@@ -16,7 +16,8 @@ include(FetchContent)
 FetchContent_Declare(
   LVGL
   GIT_REPOSITORY git@github.com:lvgl/lvgl.git
-  GIT_TAG v9.4.0
+  GIT_TAG v9.5.0
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 set(LV_BUILD_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/shared/lvgl/lv_conf.h)
 FetchContent_MakeAvailable(LVGL)

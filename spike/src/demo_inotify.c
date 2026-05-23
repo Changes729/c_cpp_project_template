@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
   for(j = 1; j < argc; j++) {
     wd = inotify_add_watch(inotifyFd, argv[j], IN_ALL_EVENTS);
-    errExit("inotify_add_watch");
+    if(wd == -1) errExit("inotify_add_watch");
 
     printf("Watching %s using wd %d\n", argv[j], wd);
   }
