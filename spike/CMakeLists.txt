@@ -149,7 +149,7 @@ target_link_libraries(alsa-play asound)
 target_link_libraries(io-flush-main project_library)
 target_link_libraries(example-timer project_library)
 
-target_link_libraries(dbus-epoll ${DBUS_LIBRARIES})
+target_link_libraries(dbus-poll ${DBUS_LIBRARIES})
 target_link_libraries(dbus-server ${DBUS_LIBRARIES} dbus_example_object)
 target_link_libraries(dbus-client ${DBUS_LIBRARIES})
 
