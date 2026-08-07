@@ -43,6 +43,10 @@ pkg_check_modules(GIO gio-2.0)
 include_directories(${GIO_INCLUDE_DIRS})
 link_directories(${GIO_LIBRARY_DIRS})
 
+pkg_check_modules(GIOMM REQUIRED IMPORTED_TARGET "giomm-2.4")
+include_directories(${GIOMM_INCLUDE_DIRS})
+link_directories(${GIOMM_LIBRARY_DIRS})
+
 find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 link_directories(${SDL2_LIBRARY_DIRS})
@@ -165,6 +169,7 @@ target_link_libraries(sdl_triangle ${SDL2_LIBRARIES})
 target_link_libraries(readline-example readline)
 target_link_libraries(testlibusb ${LIBUSB_LIBRARIES})
 target_link_libraries(udev_device udev)
+target_link_libraries(mime-type PkgConfig::GIOMM)
 
 target_link_libraries(lvgl-simple lvgl lvgl_lib)
 target_link_libraries(lvgl PRIVATE SDL2::SDL2)
