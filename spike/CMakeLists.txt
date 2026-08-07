@@ -171,5 +171,12 @@ target_link_libraries(testlibusb ${LIBUSB_LIBRARIES})
 target_link_libraries(udev_device udev)
 target_link_libraries(mime-type PkgConfig::GIOMM)
 
+target_link_libraries(mime-type-macos
+  PkgConfig::GIOMM
+  "-framework CoreFoundation"
+  "-framework ApplicationServices"
+)
+
+
 target_link_libraries(lvgl-simple lvgl lvgl_lib)
 target_link_libraries(lvgl PRIVATE SDL2::SDL2)
