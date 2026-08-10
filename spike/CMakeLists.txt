@@ -77,10 +77,17 @@ link_directories(${LIBUSB_LIBRARY_DIRS})
 
 
 # include .c/.cpp ##############################################################
-file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp")
 file(GLOB DESIGN_PATTERN_C "src/design-pattern/*.c" "src/design-pattern/*.cpp")
 file(GLOB SHARED_C "shared/*.c")
 file(GLOB LIB_SRC "shared/lib/*.c" "shared/lib/*.cpp")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp" "src/linux/*.cpp")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	file(GLOB EXAMPLES_C "src/*.c" "src/*.cpp" "src/mac/*.cpp")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    message(STATUS "This is FreeBSD")
+endif()
 
 file(GLOB LIB_DBUS_HELPER_SRC
 		"shared/dbus/*.c"
@@ -169,13 +176,18 @@ target_link_libraries(sdl_triangle ${SDL2_LIBRARIES})
 target_link_libraries(readline-example readline)
 target_link_libraries(testlibusb ${LIBUSB_LIBRARIES})
 target_link_libraries(udev_device udev)
-target_link_libraries(mime-type PkgConfig::GIOMM)
 
-target_link_libraries(mime-type-macos
-  PkgConfig::GIOMM
-  "-framework CoreFoundation"
-  "-framework ApplicationServices"
-)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_link_libraries(mime-type PkgConfig::GIOMM)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	target_link_libraries(mime-type-macos
+		PkgConfig::GIOMM
+		"-framework CoreFoundation"
+		"-framework ApplicationServices"
+	)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    message(STATUS "This is FreeBSD")
+endif()
 
 
 target_link_libraries(lvgl-simple lvgl lvgl_lib)
