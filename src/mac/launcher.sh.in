@@ -1,0 +1,12 @@
+#!/bin/bash
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+RESOURCES="$APP_DIR/Resources"
+REAL_BIN="$RESOURCES/@REAL_BINARY_NAME@"
+
+osascript <<END
+tell application "Terminal"
+    do script "$REAL_BIN"
+    activate
+end tell
+END
+exit 0

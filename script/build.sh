@@ -35,6 +35,15 @@ run() {
   ./$CMAKE_PROJECT_NAME
 }
 
+package() {
+  if [ ! -d $MAIN_DIR/build ]; then
+    build
+  fi
+
+  cd $MAIN_DIR/build
+  cpack
+}
+
 ## Start from here. #####################################
 input=$1
 
@@ -58,6 +67,9 @@ case "$input" in
 "--run" | "-r")
   run
   ;;
+"--package" | "--dmg" | "-p")
+    package
+    ;;
 *)
   clean && build && run
   ;;

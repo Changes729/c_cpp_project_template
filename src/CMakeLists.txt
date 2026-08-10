@@ -1,6 +1,47 @@
 include_directories(.)
 
-add_executable( ${CPACK_PROJECT_NAME}
-  main.c
-)
+if(APPLE)
+  set(REAL_BINARY_NAME "${CPACK_PROJECT_NAME}_real")
+  add_executable(${CPACK_PROJECT_NAME}_real main.c)
 
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/mac/launcher.sh.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PROJECT_NAME}"
+    @ONLY
+  )
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/placeholder.c" "int main(void) { return 0; }")
+  add_executable(${CPACK_PROJECT_NAME} MACOSX_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/placeholder.c")
+
+  set_target_properties(${CPACK_PROJECT_NAME} PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist"
+    MACOSX_BUNDLE_BUNDLE_NAME "${CPACK_PROJECT_NAME}"
+    MACOSX_BUNDLE_BUNDLE_VERSION "${CPACK_PROJECT_VERSION}"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${CPACK_PROJECT_VERSION}"
+    MACOSX_BUNDLE_EXECUTABLE_NAME "${CPACK_PROJECT_NAME}"
+  )
+
+  add_custom_command(TARGET ${CPACK_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PROJECT_NAME}"
+      "$<TARGET_FILE_DIR:${CPACK_PROJECT_NAME}>/../MacOS/${CPACK_PROJECT_NAME}"
+    COMMAND chmod +x "$<TARGET_FILE_DIR:${CPACK_PROJECT_NAME}>/../MacOS/${CPACK_PROJECT_NAME}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+      "$<TARGET_FILE_DIR:${CPACK_PROJECT_NAME}>/../Resources"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:${CPACK_PROJECT_NAME}_real>"
+      "$<TARGET_FILE_DIR:${CPACK_PROJECT_NAME}>/../Resources/${CPACK_PROJECT_NAME}_real"
+  )
+
+  install(TARGETS ${CPACK_PROJECT_NAME}
+    BUNDLE DESTINATION .
+  )
+  install(TARGETS ${CPACK_PROJECT_NAME}_real
+    RUNTIME DESTINATION "${CPACK_PROJECT_NAME}.app/Contents/Resources"
+  )
+else()
+  add_executable( ${CPACK_PROJECT_NAME}
+    main.c
+  )
+  install(TARGETS ${CPACK_PROJECT_NAME} DESTINATION .)
+endif()

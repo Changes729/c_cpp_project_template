@@ -64,7 +64,23 @@ find_package(PkgConfig REQUIRED)
 
 add_subdirectory(src)
 
-if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
-  message("build spike subdirectory")
-  add_subdirectory(spike)
+# if(NOT "${SPIKE_EXAMPLES}" STREQUAL "OFF")
+#   message("build spike subdirectory")
+#   add_subdirectory(spike)
+# endif()
+
+## CPack packaging configuration
+set(CPACK_PACKAGE_NAME "${CPACK_PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${CPACK_PROJECT_VERSION}")
+set(CPACK_PACKAGE_VENDOR "Example")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Playground Application")
+
+if(APPLE)
+  set(CPACK_GENERATOR "DragNDrop")
+  set(CPACK_DMG_VOLUME_NAME "${CPACK_PROJECT_NAME} Installer")
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/package" CACHE PATH "" FORCE)
+else()
+  set(CPACK_GENERATOR "TGZ;ZIP")
 endif()
+
+include(CPack)
