@@ -1,8 +1,7 @@
 include_directories(.)
 
 if(APPLE)
-  set(REAL_BINARY_NAME "${CPACK_PROJECT_NAME}_real")
-  add_executable(${CPACK_PROJECT_NAME}_real main.c)
+  add_executable(${CPACK_PROJECT_NAME}_real main.cpp)
 
   configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/mac/launcher.sh.in"
@@ -10,7 +9,7 @@ if(APPLE)
     @ONLY
   )
 
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/placeholder.c" "int main(void) { return 0; }")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/placeholder.c" "int main() {return 0;}")
   add_executable(${CPACK_PROJECT_NAME} MACOSX_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/placeholder.c")
 
   set_target_properties(${CPACK_PROJECT_NAME} PROPERTIES
@@ -41,7 +40,7 @@ if(APPLE)
   )
 else()
   add_executable( ${CPACK_PROJECT_NAME}
-    main.c
+    main.cpp
   )
   install(TARGETS ${CPACK_PROJECT_NAME} DESTINATION .)
 endif()

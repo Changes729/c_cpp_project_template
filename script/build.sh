@@ -70,6 +70,11 @@ case "$input" in
 "--package" | "--dmg" | "-p")
     package
     ;;
+"--macos")
+  clean
+  cd $MAIN_DIR/build
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/macos-toolchain.cmake && cmake --build .
+  ;;
 *)
   clean && build && run
   ;;
